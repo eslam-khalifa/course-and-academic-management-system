@@ -6,10 +6,15 @@ namespace CourseAndAcademicManagementSystem.Presentation
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            #region Add services to the container.
+
             builder.Services.AddControllersWithViews();
 
+            #endregion
+
             var app = builder.Build();
+
+            #region Add Middleware to the container.
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
@@ -23,6 +28,8 @@ namespace CourseAndAcademicManagementSystem.Presentation
             app.UseRouting();
 
             app.UseAuthorization();
+
+            #endregion
 
             app.MapStaticAssets();
             app.MapControllerRoute(

@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 
 namespace CAMS.BusinessLogic.Services.Interfaces
 {
-    internal interface ICourseService
+    public interface ICourseService
     {
+        Task<Course> CreateCourseAsync(Course course);
+        Task<Course> UpdateCourseAsync(Course course);
+        Task<bool> DeleteCourseAsync(int courseId);
+        Task<Course?> GetCourseByIdAsync(int courseId);
+        Task<IEnumerable<Course>> GetCoursesAsync(string? search = null, int pageNumber = 1, int pageSize = 10);
     }
 }
