@@ -51,7 +51,11 @@
                 <td>@(course.IsActive ? "Yes" : "No")</td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@course.CourseId" class="btn btn-warning btn-sm">Edit</a>
-                    <button class="btn btn-danger btn-sm delete-course" data-id="@course.CourseId">Delete</button>
+                    @* <button class="btn btn-danger btn-sm delete-course" data-id="@course.CourseId">Delete</button> *@
+                    <a class="btn btn-sm btn-outline-danger"
+                       onclick=DeleteItem("/Course/Delete/@course.CourseId")>
+                        Delete
+                    </a>
                 </td>
             </tr>
         }
@@ -59,6 +63,7 @@
 </table>
 
 
+<!--Pagination-->
 
 @if (pagedCourses.TotalPages > 1)
 {
@@ -127,6 +132,7 @@
         </ul>
     </nav>
 }
+
 
 
 <div>

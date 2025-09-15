@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using CourseAndAcademicManagementSystem.Presentation.Models;
+using DataAccessLayer.DbContexts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CourseAndAcademicManagementSystem.Presentation.Controllers
@@ -7,10 +8,10 @@ namespace CourseAndAcademicManagementSystem.Presentation.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly AppDbContext context;
+        private readonly LearningPlatformDbContext  context;
 
 
-        public HomeController(ILogger<HomeController> logger, AppDbContext context)
+        public HomeController(ILogger<HomeController> logger, LearningPlatformDbContext context)
         {
             _logger = logger;
             this.context = context;

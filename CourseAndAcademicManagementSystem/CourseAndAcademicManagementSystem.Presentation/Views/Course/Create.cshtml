@@ -8,38 +8,11 @@
 
 <form asp-action="Create" method="post" enctype="multipart/form-data" class="needs-validation">
     <div class="row">
-        <!-- Left Section -->
         <div class="col-md-8">
-
-            <!--partial-->
             <partial name="_CourseForm" model="Model" />
-            
-
-        <!-- Right Section - Thumbnail -->
-        <div class="col-md-4">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title mb-3">Thumbnail</h5>
-
-                    <!-- Thumbnail Preview -->
-                    <div class="mb-3 text-center">
-                        <img id="thumbnailPreview" src="~/images/default-thumbnail.png"
-                             class="img-fluid rounded mb-2" style="max-height: 200px;" />
-                    </div>
-
-                    <!-- Upload Thumbnail -->
-                    <input type="file" class="form-control" id="thumbnailUpload" name="thumbnailFile" accept="image/*" />
-
-                    @if (!string.IsNullOrEmpty(Model.ThumbnailUrl))
-                    {
-                        <input type="hidden" asp-for="ThumbnailUrl" />
-                    }
-                </div>
-            </div>
         </div>
     </div>
 
-    <!-- Submit Button -->
     <div class="mt-4">
         <button type="submit" class="btn btn-primary">Create Course</button>
         <a asp-action="Index" class="btn btn-secondary">Cancel</a>
@@ -47,17 +20,5 @@
 </form>
 
 @section Scripts {
-    <!-- Validation Scripts -->
     <partial name="_ValidationScriptsPartial" />
-
-    <script>
-        // Preview uploaded image
-        document.getElementById("thumbnailUpload").addEventListener("change", function (event) {
-            var reader = new FileReader();
-            reader.onload = function (e) {
-                document.getElementById("thumbnailPreview").setAttribute("src", e.target.result);
-            };
-            reader.readAsDataURL(event.target.files[0]);
-        });
-    </script>
 }

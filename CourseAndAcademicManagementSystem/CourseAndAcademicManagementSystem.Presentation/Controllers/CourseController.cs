@@ -11,12 +11,13 @@ namespace CAMS.Presentation.Controllers
     public class CourseController : Controller
     {
         private readonly ICourseService _courseService;
-        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public CourseController(ICourseService courseService, IWebHostEnvironment webHostEnvironment)
+        public IUserService UserService { get; }
+
+        public CourseController(ICourseService courseService, IUserService userService)
         {
             _courseService = courseService;
-            _webHostEnvironment = webHostEnvironment;
+            UserService = userService;
         }
         public async Task<IActionResult> Index(string? searchTerm, string? category, int pageNumber = 1, int pageSize = 10)
         {
@@ -36,35 +37,27 @@ namespace CAMS.Presentation.Controllers
 
             return View(course);
         }
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            var ins = await UserService.GetAllAsync(new QueryUser { Role = "Instructor" });
+
             var createdCourseViewModel = new CreatedCourseViewModel
             {
-                Instructors = _courseService.GetInstructorsForDropdownAsync().Result
+                Instructors = ins.Select(i => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                {
+                    Text = i.Name,
+                    Value = i.Id.ToString()
+                })
             };
             return View(createdCourseViewModel);
         }
         [HttpPost]
-        public async Task<IActionResult> Create(CreatedCourseViewModel courseVM, IFormFile? thumbnailFile)
+        public async Task<IActionResult> Create(CreatedCourseViewModel courseVM)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    // رفع الصورة لو موجودة
-                    if (thumbnailFile != null && thumbnailFile.Length > 0)
-                    {
-                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(thumbnailFile.FileName);
-                        var filePath = Path.Combine(_webHostEnvironment.WebRootPath, "images", fileName);
-
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await thumbnailFile.CopyToAsync(stream);
-                        }
-
-                        courseVM.ThumbnailUrl = "/images/" + fileName;
-                    }
-
                     // استدعاء الخدمة لإنشاء الكورس
                     await _courseService.CreateCourseAsync(courseVM);
 
@@ -81,7 +74,12 @@ namespace CAMS.Presentation.Controllers
             }
 
             // مهم جدًا: إعادة تحميل قائمة الـ instructors في حالة الخطأ
-            courseVM.Instructors = await _courseService.GetInstructorsForDropdownAsync();
+            courseVM.Instructors = await UserService.GetAllAsync(new QueryUser { Role = "Instructor" })
+                .ContinueWith(t => t.Result.Select(i => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                {
+                    Text = i.Name,
+                    Value = i.Id.ToString()
+                }));
 
             // العودة لنفس الـ View مع البيانات المدخلة
             return View(courseVM);
@@ -95,32 +93,34 @@ namespace CAMS.Presentation.Controllers
             if (courseVM == null)
                 return NotFound();
 
-            courseVM.Instructors = await _courseService.GetInstructorsForDropdownAsync();
+            var instructors = await UserService.GetAllAsync(new QueryUser { Role = "Instructor" });
 
-            return View(courseVM);
+
+            var updatedCourseVM = new UpdatedCourseViewModel
+            {
+                CourseId = courseVM.CourseId,
+                Name = courseVM.Name,
+                Code = courseVM.Code,
+                Category = courseVM.Category,
+                InstructorId = courseVM.InstructorId,
+            };
+            updatedCourseVM.Instructors = instructors.Select(i => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+            {
+                Text = i.Name,
+                Value = i.Id.ToString()
+            });
+
+            return View(updatedCourseVM);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(UpdatedCourseViewModel courseVM, IFormFile? thumbnailFile)
+        public async Task<IActionResult> Edit(UpdatedCourseViewModel courseVM)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    // لو فيه صورة جديدة، نرفعها ونخزن مسارها
-                    if (thumbnailFile != null && thumbnailFile.Length > 0)
-                    {
-                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(thumbnailFile.FileName);
-                        var filePath = Path.Combine(_webHostEnvironment.WebRootPath, "images", fileName);
-
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await thumbnailFile.CopyToAsync(stream);
-                        }
-
-                        courseVM.ThumbnailUrl = "/images/" + fileName;
-                    }
-
+                  
                     // تحديث بيانات الكورس
                     await _courseService.UpdateCourseAsync(courseVM);
 
@@ -136,8 +136,13 @@ namespace CAMS.Presentation.Controllers
             }
 
             // مهم جدًا: تحميل قائمة الـ Instructors مرة أخرى لو حدث خطأ
-            courseVM.Instructors = await _courseService.GetInstructorsForDropdownAsync();
+            var instructors = await UserService.GetAllAsync(new QueryUser { Role = "Instructor" });
 
+            courseVM.Instructors = instructors.Select(i => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+            {
+                Text = i.Name,
+                Value = i.Id.ToString()
+            });
             return View(courseVM);
         }
 
