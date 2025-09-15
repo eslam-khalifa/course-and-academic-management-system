@@ -1,0 +1,26 @@
+﻿﻿<!--Alert-->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div id="success-alert" class="alert alert-success alert-dismissible fade show custom-alert" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <script>
+        setTimeout(function () {
+            var alert = document.getElementById("success-alert");
+            if (alert) {
+                alert.style.transition = "opacity 0.5s ease";
+                alert.style.opacity = "0";
+
+                // نخفيه تمامًا بعد نصف ثانية
+                setTimeout(function () {
+                    alert.style.display = "none";
+                }, 500);
+            }
+        }, 5000); // يختفي تلقائياً بعد 5 ثواني
+    </script>
+}
+
+
+<!--Alert-->

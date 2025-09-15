@@ -1,0 +1,83 @@
+﻿@model CAMS.BusinessLogic.ViewModels.SessionViewModels.CreatedSessionViewModel
+
+<div class="card p-4 shadow-sm">
+    <div class="mb-3">
+        <label asp-for="CourseId" class="form-label"></label>
+        <select asp-for="CourseId" class="form-select" asp-items="Model.Courses">
+            <option value="">-- Select Course --</option>
+        </select>
+        <span asp-validation-for="CourseId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label"></label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="SessionCode" class="form-label"></label>
+        <input asp-for="SessionCode" class="form-control" />
+        <span asp-validation-for="SessionCode" class="text-danger"></span>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="StartDate" class="form-label"></label>
+            <input asp-for="StartDate" class="form-control" type="date" />
+            <span asp-validation-for="StartDate" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="EndDate" class="form-label"></label>
+            <input asp-for="EndDate" class="form-control" type="date" />
+            <span asp-validation-for="EndDate" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="EnrollmentStartDate" class="form-label"></label>
+            <input asp-for="EnrollmentStartDate" class="form-control" type="date" />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="EnrollmentEndDate" class="form-label"></label>
+            <input asp-for="EnrollmentEndDate" class="form-control" type="date" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Location" class="form-label"></label>
+        <input asp-for="Location" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Capacity" class="form-label"></label>
+        <input asp-for="Capacity" class="form-control" type="number" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="InstructorId" class="form-label"></label>
+        <select asp-for="InstructorId" class="form-select" asp-items="Model.Instructors">
+            <option value="">-- Select Instructor --</option>
+        </select>
+        <span asp-validation-for="InstructorId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Status" class="form-label"></label>
+        <select asp-for="Status" class="form-select">
+            <option value="Scheduled">Scheduled</option>
+            <option value="Ongoing">Ongoing</option>
+            <option value="Completed">Completed</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Mode" class="form-label"></label>
+        <select asp-for="Mode" class="form-select">
+            <option value="">-- Select Mode --</option>
+            <option value="Online">Online</option>
+            <option value="Offline">Offline</option>
+            <option value="Hybrid">Hybrid</option>
+        </select>
+    </div>

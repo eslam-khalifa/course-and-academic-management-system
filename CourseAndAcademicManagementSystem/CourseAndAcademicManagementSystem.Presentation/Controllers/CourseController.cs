@@ -24,6 +24,18 @@ namespace CAMS.Presentation.Controllers
 
             return View(courseListViewModel);
         }
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            var course = await _courseService.GetCourseByIdAsync(id);
+
+            if (course == null)
+            {
+                return NotFound();
+            }
+
+            return View(course);
+        }
         public IActionResult Create()
         {
             var createdCourseViewModel = new CreatedCourseViewModel

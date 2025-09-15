@@ -11,75 +11,9 @@
         <!-- Left Section -->
         <div class="col-md-8">
 
-            <!-- Course Name -->
-            <div class="form-group mb-3">
-                <label asp-for="Name" class="form-label"></label>
-                <input asp-for="Name" class="form-control" placeholder="Enter course name" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-
-            <!-- Course Code -->
-            <div class="form-group mb-3">
-                <label asp-for="Code" class="form-label"></label>
-                <input asp-for="Code" class="form-control" placeholder="Enter course code" />
-                <span asp-validation-for="Code" class="text-danger"></span>
-            </div>
-
-            <!-- Category -->
-            <div class="form-group mb-3">
-                <label asp-for="Category" class="form-label"></label>
-                <input asp-for="Category" class="form-control" placeholder="Enter category" />
-                <span asp-validation-for="Category" class="text-danger"></span>
-            </div>
-
-            <!-- Description -->
-            <div class="form-group mb-3">
-                <label asp-for="Description" class="form-label"></label>
-                <textarea asp-for="Description" class="form-control" rows="4" placeholder="Enter course description"></textarea>
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-
-            <!-- Credits & Duration -->
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group mb-3">
-                        <label asp-for="Credits" class="form-label"></label>
-                        <input asp-for="Credits" class="form-control" placeholder="0-10" />
-                        <span asp-validation-for="Credits" class="text-danger"></span>
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <div class="form-group mb-3">
-                        <label asp-for="DurationHours" class="form-label"></label>
-                        <input asp-for="DurationHours" class="form-control" placeholder="Enter duration in hours" />
-                        <span asp-validation-for="DurationHours" class="text-danger"></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Max Trainees -->
-            <div class="form-group mb-3">
-                <label asp-for="MaxTrainees" class="form-label"></label>
-                <input asp-for="MaxTrainees" class="form-control" placeholder="Enter maximum number of trainees" />
-                <span asp-validation-for="MaxTrainees" class="text-danger"></span>
-            </div>
-
-            <!-- Instructor Dropdown -->
-            <div class="form-group mb-3">
-                <label asp-for="InstructorId" class="form-label">Instructor</label>
-                <select asp-for="InstructorId" class="form-select" asp-items="Model.Instructors">
-                    <option value="">-- Select Instructor --</option>
-                </select>
-                <span asp-validation-for="InstructorId" class="text-danger"></span>
-            </div>
-
-            <!-- Is Active -->
-            <div class="form-check mb-3">
-                <input asp-for="IsActive" class="form-check-input" />
-                <label asp-for="IsActive" class="form-check-label"></label>
-            </div>
-        </div>
+            <!--partial-->
+            <partial name="_CourseForm" model="Model" />
+            
 
         <!-- Right Section - Thumbnail -->
         <div class="col-md-4">

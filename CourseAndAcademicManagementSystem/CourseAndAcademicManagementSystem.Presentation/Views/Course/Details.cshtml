@@ -1,0 +1,101 @@
+﻿@model CAMS.BusinessLogic.ViewModels.CourseViewModels.CourseDetailsViewModel
+
+@{
+    ViewData["Title"] = "Course Details";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Course Details</h2>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <dl class="row">
+
+                <!-- Thumbnail -->
+                @if (!string.IsNullOrEmpty(Model.ThumbnailUrl))
+                {
+                    <div class="col-12 text-center mb-3">
+                        <img src="@Model.ThumbnailUrl" alt="@Model.Name" class="img-thumbnail" style="max-width: 200px;" />
+                    </div>
+                }
+
+                <!-- Course Name -->
+                <dt class="col-sm-3">Course Name</dt>
+                <dd class="col-sm-9">@Model.Name</dd>
+
+                <!-- Code -->
+                <dt class="col-sm-3">Code</dt>
+                <dd class="col-sm-9">@(!string.IsNullOrEmpty(Model.Code) ? Model.Code : "N/A")</dd>
+
+                <!-- Category -->
+                <dt class="col-sm-3">Category</dt>
+                <dd class="col-sm-9">@Model.Category</dd>
+
+                <!-- Description -->
+                <dt class="col-sm-3">Description</dt>
+                <dd class="col-sm-9">@(!string.IsNullOrEmpty(Model.Description) ? Model.Description : "No description provided.")</dd>
+
+                <!-- Credits -->
+                <dt class="col-sm-3">Credits</dt>
+                <dd class="col-sm-9">@(Model.Credits.HasValue? Model.Credits.ToString() : "N/A")</dd>
+
+                <!-- Duration Hours -->
+                <dt class="col-sm-3">Duration (Hours)</dt>
+                <dd class="col-sm-9">@(Model.DurationHours.HasValue? Model.DurationHours.ToString() : "N/A")</dd>
+
+                <!-- Max Trainees -->
+                <dt class="col-sm-3">Max Trainees</dt>
+                <dd class="col-sm-9">@(Model.MaxTrainees.HasValue? Model.MaxTrainees.ToString() : "N/A")</dd>
+
+                <!-- Is Active -->
+                <dt class="col-sm-3">Status</dt>
+                <dd class="col-sm-9">
+                    @if (Model.IsActive)
+                    {
+                        <span class="badge bg-success">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Inactive</span>
+                    }
+                </dd>
+
+                <!-- Instructor -->
+                <dt class="col-sm-3">Instructor</dt>
+                <dd class="col-sm-9">@Model.Instructor?.DisplayName ?? "N/A"</dd>
+
+                <!-- Created At -->
+                <dt class="col-sm-3">Created At</dt>
+                <dd class="col-sm-9">@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</dd>
+
+                <!-- Created By -->
+                <dt class="col-sm-3">Created By</dt>
+                <dd class="col-sm-9">@Model.CreatedBy</dd>
+
+                <!-- Updated At -->
+                <dt class="col-sm-3">Updated At</dt>
+                <dd class="col-sm-9">
+                    @(Model.UpdatedAt.HasValue? Model.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm") : "N/A")
+                </dd>
+
+                <!-- Updated By -->
+                <dt class="col-sm-3">Updated By</dt>
+                <dd class="col-sm-9">@Model.UpdatedBy</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="mt-4 d-flex justify-content-between">
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to List
+        </a>
+        <div>
+            <a asp-action="Edit" asp-route-id="@Model.CourseId" class="btn btn-warning">
+                <i class="bi bi-pencil-square"></i> Edit
+            </a>
+            <a asp-action="Delete" asp-route-id="@Model.CourseId" class="btn btn-danger ms-2">
+                <i class="bi bi-trash"></i> Delete
+            </a>
+        </div>
+    </div>
+</div>

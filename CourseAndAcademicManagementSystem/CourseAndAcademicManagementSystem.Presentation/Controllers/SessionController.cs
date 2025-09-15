@@ -1,5 +1,6 @@
 ﻿using CAMS.BusinessLogic.Services.Interfaces;
 using CAMS.BusinessLogic.ViewModels;
+using CAMS.BusinessLogic.ViewModels.SessionViewModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CAMS.Presentation.Controllers
@@ -11,104 +12,145 @@ namespace CAMS.Presentation.Controllers
         {
             _sessionService = sessionService;
         }
-        public async Task<IActionResult> Index(string searchCourseName, int pageNumber = 1, int pageSize = 5)
+        public async Task<IActionResult> Index(string? search, int pageNumber = 1, int pageSize = 10)
         {
-            var sessionVM = _sessionService.GetSessionsAsync(searchCourseName, pageNumber, pageSize);
-            return View();
-            /*
-             * All Sessions include Courses And Instructors (Where search condition matches)
-             * total pages, current page, search term
-             */
+            var sessions = await _sessionService.GetSessionsAsync(search: search, pageNumber: pageNumber, pageSize: pageSize);
+
+            var vm = new SessionListViewModel
+            {
+                SearchTerm = search,
+                PagedCourses = sessions
+            };
+
+            return View(vm);
         }
+        public async Task<IActionResult> Details(int id)
+        {
+            var session = await _sessionService.GetSessionByIdAsync(id);
+            if (session == null)
+            {
+                return NotFound();
+            }
+
+            return View(session);
+        }
+
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            var sessionVM = new SessionViewModel
+            var sessionVM = new CreatedSessionViewModel
             {
-                Courses = await _sessionService.GetCoursesForDropdownAsync()
+                Courses = await _sessionService.GetCoursesForDropdownAsync(),
                 Instructors = await _sessionService.GetInstructorsForDropdownAsync()
             };
             return View(sessionVM);
         }
         [HttpPost]
-        public async Task<IActionResult> Create(SessionViewModel sessionVM)
+        public async Task<IActionResult> Create(CreatedSessionViewModel vm)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                try
-                {
-                    await _sessionService.CreateSessionAsync(sessionVM);
-                    TempData["SuccessMessage"] = "Session created successfully!";
-                    return RedirectToAction(nameof(Index));
-                }
-                catch (Exception ex)
-                {
-                    ModelState.AddModelError("", ex.Message);
-                }
+                vm.Courses = await GetCoursesForDropdownAsync();
+                vm.Instructors = await GetInstructorsForDropdownAsync();
+                return View(vm);
             }
-            sessionVM.Courses = await _sessionService.GetCoursesForDropdownAsync();
-            sessionVM.Instructors = await _sessionService.GetInstructorsForDropdownAsync();
-            return View(sessionVM);
+
+            try
+            {
+                await _sessionService.CreateSessionAsync(vm);
+                TempData["SuccessMessage"] = "Session created successfully!";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                vm.Courses = await GetCoursesForDropdownAsync();
+                vm.Instructors = await GetInstructorsForDropdownAsync();
+                return View(vm);
+            }
         }
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var sessionVM = await _sessionService.GetSessionByIdAsync(id);
-            if (sessionVM == null) return NotFound();
-
-            sessionVM.Courses = await _sessionService.GetCoursesForDropdownAsync();
-            sessionVM.Instructors = await _sessionService.GetInstructorsForDropdownAsync();
-            return View(sessionVM);
-        }
-        [HttpPost]
-        public async Task<IActionResult> Edit(SessionViewModel sessionVM)
-        {
-            if (ModelState.IsValid)
+            var session = await _sessionService.GetSessionByIdAsync(id);
+            if (session == null)
             {
-                try
-                {
-                    await _sessionService.UpdateSessionAsync(sessionVM);
-                    TempData["SuccessMessage"] = "Session updated successfully!";
-                    return RedirectToAction(nameof(Index));
-                }
-                catch (Exception ex)
-                {
-                    ModelState.AddModelError("", ex.Message);
-                }
+                return NotFound();
             }
-            sessionVM.Courses = await _sessionService.GetCoursesForDropdownAsync();
-            sessionVM.Instructors = await _sessionService.GetInstructorsForDropdownAsync();
-            return View(sessionVM);
+
+            var vm = new UpdatedSessionViewModel
+            {
+                SessionId = session.SessionId,
+                CourseId = session.CourseId,
+                Title = session.Title,
+                SessionCode = session.SessionCode,
+                StartDate = session.StartDate,
+                EndDate = session.EndDate,
+                EnrollmentStartDate = session.EnrollmentStartDate,
+                EnrollmentEndDate = session.EnrollmentEndDate,
+                Location = session.Location,
+                Capacity = session.Capacity,
+                InstructorId = session.InstructorId,
+                Status = session.Status,
+                Mode = session.Mode,
+                Courses = await GetCoursesForDropdownAsync(),
+                Instructors = await GetInstructorsForDropdownAsync()
+            };
+
+            return View(vm);
+        }
+        public async Task<IActionResult> Edit(UpdatedSessionViewModel vm)
+        {
+            if (!ModelState.IsValid)
+            {
+                vm.Courses = await GetCoursesForDropdownAsync();
+                vm.Instructors = await GetInstructorsForDropdownAsync();
+                return View(vm);
+            }
+
+            try
+            {
+                await _sessionService.UpdateSessionAsync(vm);
+                TempData["SuccessMessage"] = "Session updated successfully!";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                vm.Courses = await GetCoursesForDropdownAsync();
+                vm.Instructors = await GetInstructorsForDropdownAsync();
+                return View(vm);
+            }
         }
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
-            
-            var deleted = await _sessionService.DeleteSessionAsync(id);
-            if (!deleted)
+
+            var result = await _sessionService.DeleteSessionAsync(id);
+            if (!result.Success)
             {
-                return Json(new { success = false, message = "Error while deleting session" });
+                return Json(new { success = false, message = result.Message });
             }
 
-            return Json(new { success = true, message = "Session deleted successfully" });
+            return Json(new { success = true, message = result.Message });
         }
         // Remote Validation for StartDate
-        public async Task<IActionResult> ValidateStartDate(DateTime startDate)
-        {
-            if (_sessionService.ValidateStartDate(startDate))
-            {
-                return Json(true);
-            }
-            return Json("Start date cannot be in the past.");
-        }
-        // Remote Validation for EndDate
-        public async Task<IActionResult> ValidateEndDate(DateTime startDate, DateTime endDate)
-        {
-            if (_sessionService.ValidateEndDate(startDate, endDate))
-            {
-                return Json(true);
-            }
-            return Json("End date must be after Start Date.");
-        }
+        //public async Task<IActionResult> ValidateStartDate(DateTime startDate)
+        //{
+        //    if (_sessionService.ValidateStartDate(startDate))
+        //    {
+        //        return Json(true);
+        //    }
+        //    return Json("Start date cannot be in the past.");
+        //}
+        //// Remote Validation for EndDate
+        //public async Task<IActionResult> ValidateEndDate(DateTime startDate, DateTime endDate)
+        //{
+        //    if (_sessionService.ValidateEndDate(startDate, endDate))
+        //    {
+        //        return Json(true);
+        //    }
+        //    return Json("End date must be after Start Date.");
+        //}
     }
 }
