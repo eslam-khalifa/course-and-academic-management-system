@@ -6,7 +6,30 @@ using System.Threading.Tasks;
 
 namespace CAMS.BusinessLogic.ViewModels.SessionViewModels
 {
-    internal class UpdatedSessionViewModel
+    public class UpdatedSessionViewModel
     {
+        public int CourseId { get; set; }
+
+        public string Title { get; set; } = string.Empty;
+
+        public string SessionCode { get; set; } = string.Empty;
+
+        public DateTime StartDate { get; set; }
+
+        public DateTime EndDate { get; set; }
+
+        public DateTime? EnrollmentStartDate { get; set; }
+
+        public DateTime? EnrollmentEndDate { get; set; }
+
+        public string? Location { get; set; }
+
+        public int? Capacity { get; set; }
+
+        public int InstructorId { get; set; }
+
+        public string Status { get; set; } = "Scheduled";
+
+        public string? Mode { get; set; }
     }
 }
