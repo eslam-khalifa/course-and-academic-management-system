@@ -1,0 +1,66 @@
+﻿@model SessionViewModel
+
+@{
+    ViewBag.Title = "Create Session";
+}
+
+<h2>Create Session</h2>
+
+<form asp-action="Create" method="post">
+
+    @* <partial name="_SessionForm" /> *@
+
+    <div class="form-group">
+        <label asp-for="CourseId"></label>
+        <select asp-for="CourseId" asp-items="Model.Courses" class="form-control">
+            <option value="">-- Select Course --</option>
+        </select>
+        <span asp-validation-for="CourseId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="InstructorId"></label>
+        <select asp-for="InstructorId" asp-items="Model.Instructors" class="form-control">
+            <option value="">-- Select Instructor --</option>
+        </select>
+        <span asp-validation-for="InstructorId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="StartDate"></label>
+        <input asp-for="StartDate" class="form-control" type="date" />
+        <span asp-validation-for="StartDate" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="EndDate"></label>
+        <input asp-for="EndDate" class="form-control" type="date" />
+        <span asp-validation-for="EndDate" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Mode"></label>
+        <select asp-for="Mode" class="form-control">
+            <option value="">-- Select Mode --</option>
+            <option value="Online">Online</option>
+            <option value="Offline">Offline</option>
+            <option value="Hybrid">Hybrid</option>
+        </select>
+        <span asp-validation-for="Mode" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Location"></label>
+        <input asp-for="Location" class="form-control" placeholder="Enter location or link" />
+        <span asp-validation-for="Location" class="text-danger"></span>
+    </div>
+
+
+
+    <button type="submit" class="btn btn-primary">Create</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

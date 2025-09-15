@@ -1,0 +1,375 @@
+[1mdiff --git a/CourseAndAcademicManagementSystem/CAMS.BusinessLogic/CAMS.BusinessLogic.csproj b/CourseAndAcademicManagementSystem/CAMS.BusinessLogic/CAMS.BusinessLogic.csproj[m
+[1mindex 125f4c9..5fbf360 100644[m
+[1m--- a/CourseAndAcademicManagementSystem/CAMS.BusinessLogic/CAMS.BusinessLogic.csproj[m
+[1m+++ b/CourseAndAcademicManagementSystem/CAMS.BusinessLogic/CAMS.BusinessLogic.csproj[m
+[36m@@ -6,4 +6,12 @@[m
+     <Nullable>enable</Nullable>[m
+   </PropertyGroup>[m
+ [m
+[32m+[m[32m  <ItemGroup>[m
+[32m+[m[32m    <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.3.0" />[m
+[32m+[m[32m  </ItemGroup>[m
+[32m+[m
+[32m+[m[32m  <ItemGroup>[m
+[32m+[m[32m    <ProjectReference Include="..\CAMS.DataAccess\CAMS.DataAccess.csproj" />[m
+[32m+[m[32m  </ItemGroup>[m
+[32m+[m
+ </Project>[m
+[1mdiff --git a/CourseAndAcademicManagementSystem/CAMS.BusinessLogic/ViewModels/CourseViewModel.cs b/CourseAndAcademicManagementSystem/CAMS.BusinessLogic/ViewModels/CourseViewModel.cs[m
+[1mindex 194b4be..b71df46 100644[m
+[1m--- a/CourseAndAcademicManagementSystem/CAMS.BusinessLogic/ViewModels/CourseViewModel.cs[m
+[1m+++ b/CourseAndAcademicManagementSystem/CAMS.BusinessLogic/ViewModels/CourseViewModel.cs[m
+[36m@@ -1,4 +1,5 @@[m
+ ﻿using CAMS.BusinessLogic.Services.Validators;[m
+[32m+[m[32musing Microsoft.AspNetCore.Mvc;[m
+ using System;[m
+ using System.Collections.Generic;[m
+ using System.ComponentModel.DataAnnotations;[m
+[1mdiff --git a/CourseAndAcademicManagementSystem/CAMS.BusinessLogic/ViewModels/UserViewModel.cs b/CourseAndAcademicManagementSystem/CAMS.BusinessLogic/ViewModels/UserViewModel.cs[m
+[1mindex 12b8091..bb13b34 100644[m
+[1m--- a/CourseAndAcademicManagementSystem/CAMS.BusinessLogic/ViewModels/UserViewModel.cs[m
+[1m+++ b/CourseAndAcademicManagementSystem/CAMS.BusinessLogic/ViewModels/UserViewModel.cs[m
+[36m@@ -1,4 +1,5 @@[m
+[31m-﻿using System;[m
+[32m+[m[32m﻿using Microsoft.AspNetCore.Mvc;[m
+[32m+[m[32musing System;[m
+ using System.Collections.Generic;[m
+ using System.ComponentModel.DataAnnotations;[m
+ using System.Linq;[m
+[1mdiff --git a/CourseAndAcademicManagementSystem/CourseAndAcademicManagementSystem.Presentation/CAMS.Presentation.csproj b/CourseAndAcademicManagementSystem/CourseAndAcademicManagementSystem.Presentation/CAMS.Presentation.csproj[m
+[1mindex 6568b3d..7e58167 100644[m
+[1m--- a/CourseAndAcademicManagementSystem/CourseAndAcademicManagementSystem.Presentation/CAMS.Presentation.csproj[m
+[1m+++ b/CourseAndAcademicManagementSystem/CourseAndAcademicManagementSystem.Presentation/CAMS.Presentation.csproj[m
+[36m@@ -6,4 +6,12 @@[m
+     <ImplicitUsings>enable</ImplicitUsings>[m
+   </PropertyGroup>[m
+ [m
+[32m+[m[32m  <ItemGroup>[m
+[32m+[m[32m    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />[m
+[32m+[m[32m  </ItemGroup>[m
+[32m+[m
+[32m+[m[32m  <ItemGroup>[m
+[32m+[m[32m    <ProjectReference Include="..\CAMS.BusinessLogic\CAMS.BusinessLogic.csproj" />[m
+[32m+[m[32m  </ItemGroup>[m
+[32m+[m
+ </Project>[m
+[1mdiff --git a/CourseAndAcademicManagementSystem/CourseAndAcademicManagementSystem.Presentation/Controllers/CourseController.cs b/CourseAndAcademicManagementSystem/CourseAndAcademicManagementSystem.Presentation/Controllers/CourseController.cs[m
+[1mnew file mode 100644[m
+[1mindex 0000000..4502995[m
+[1m--- /dev/null[m
+[1m+++ b/CourseAndAcademicManagementSystem/CourseAndAcademicManagementSystem.Presentation/Controllers/CourseController.cs[m
+[36m@@ -0,0 +1,89 @@[m
+[32m+[m[32m﻿using CAMS.BusinessLogic.Services.Interfaces;[m
+[32m+[m[32musing CAMS.BusinessLogic.ViewModels;[m
+[32m+[m[32musing Microsoft.AspNetCore.Cors.Infrastructure;[m
+[32m+[m[32musing Microsoft.AspNetCore.Mvc;[m
+[32m+[m
+[32m+[m
+[32m+[m[32mnamespace CAMS.Presentation.Controllers[m
+[32m+[m[32m{[m
+[32m+[m[32m    public class CourseController : Controller[m
+[32m+[m[32m    {[m
+[32m+[m[32m        private readonly ICourseService _courseService;[m
+[32m+[m
+[32m+[m[32m        public CourseController(ICourseService courseService)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            _courseService = courseService;[m
+[32m+[m[32m        }[m
+[32m+[m[32m        public async Task<IActionResult> Index(string? search, int page = 1)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            var courseVW = await _courseService.GetCoursesAsync(search, page);[m
+[32m+[m[32m            return View(courseVW);[m
+[32m+[m[32m            /*[m
+[32m+[m[32m             {[m
+[32m+[m[32m                List<Course> include Instructors (where search condition matches)[m
+[32m+[m[32m                Total Pages, Current Page, Search Term[m
+[32m+[m[32m             }[m
+[32m+[m[32m             */[m
+[32m+[m[32m        }[m
+[32m+[m[32m        public IActionResult Create()[m
+[32m+[m[32m        {[m
+[32m+[m[32m            var courseVM = new CourseViewModel[m
+[32m+[m[32m            {[m
+[32m+[m[32m                Instructors = _courseService.GetInstructorsForDropdownAsync().Result[m
+[32m+[m[32m            };[m
+[32m+[m[32m            return View(courseVM);[m
+[32m+[m[32m        }[m
+[32m+[m[32m        [HttpPost][m
+[32m+[m[32m        public async Task<IActionResult> Create(CourseViewModel courseVM)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            if (ModelState.IsValid)[m
+[32m+[m[32m            {[m
+[32m+[m[32m                try[m
+[32m+[m[32m                {[m
+[32m+[m[32m                    await _courseService.CreateCourseAsync(courseVM);[m
+[32m+[m[32m                    TempData["SuccessMessage"] = "Course created successfully!";[m
+[32m+[m[32m                    return RedirectToAction(nameof(Index));[m
+[32m+[m[32m                }[m
+[32m+[m[32m                catch (Exception ex)[m
+[32m+[m[32m                {[m
+[32m+[m[32m                    ModelState.AddModelError("", ex.Message);[m
+[32m+[m[32m                }[m
+[32m+[m[32m            }[m
+[32m+[m[32m            return View(courseVM);[m
+[32m+[m[32m        }[m
+[32m+[m[32m        [HttpGet][m
+[32m+[m[32m        public async Task<IActionResult> Edit(int id)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            var courseVM = await _courseService.GetCourseByIdAsync(id);[m
+[32m+[m[32m            if (course == null) return NotFound();[m
+[32m+[m[32m            courseVM.Instructors = await _courseService.GetInstructorsForDropdownAsync();[m
+[32m+[m[32m            return View(courseVM);[m
+[32m+[m[32m        }[m
+[32m+[m[32m        [HttpPost][m
+[32m+[m[32m        public async Task<IActionResult> Edit(CourseViewModel courseVM)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            if (ModelState.IsValid)[m
+[32m+[m[32m            {[m
+[32m+[m[32m                try[m
+[32m+[m[32m                {[m
+[32m+[m[32m                    await _courseService.UpdateCourseAsync(courseVM);[m
+[32m+[m[32m                    TempData["SuccessMessage"] = "Course updated successfully!";[m
+[32m+[m[32m                    return RedirectToAction(nameof(Index));[m
+[32m+[m[32m                }[m
+[32m+[m[32m                catch (Exception ex)[m
+[32m+[m[32m                {[m
+[32m+[m[32m                    ModelState.AddModelError("", ex.Message);[m
+[32m+[m[32m                }[m
+[32m+[m[32m            }[m
+[32m+[m[32m            return View(courseVM);[m
+[32m+[m[32m        }[m
+[32m+[m[32m        public async Task<IActionResult> Delete(int id)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            var success = await _courseService.DeleteCourseAsync(id);[m
+[32m+[m[32m            if (!success)[m
+[32m+[m[32m                return Json(new { success = false, message = "Course not found" });[m
+[32m+[m
+[32m+[m[32m            return Json(new { success = true, message = "Course deleted successfully" });[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[1mdiff --git a/CourseAndAcademicManagementSystem/CourseAndAcademicManagementSystem.Presentation/Controllers/GradeController.cs b/CourseAndAcademicManagementSystem/CourseAndAcademicManagementSystem.Presentation/Controllers/GradeController.cs[m
+[1mnew file mode 100644[m
+[1mindex 0000000..20468a0[m
+[1m--- /dev/null[m
+[1m+++ b/CourseAndAcademicManagementSystem/CourseAndAcademicManagementSystem.Presentation/Controllers/GradeController.cs[m
+[36m@@ -0,0 +1,12 @@[m
+[32m+[m[32m﻿using Microsoft.AspNetCore.Mvc;[m
+[32m+[m
+[32m+[m[32mnamespace CAMS.Presentation.Controllers[m
+[32m+[m[32m{[m
+[32m+[m[32m    public class GradeController : Controller[m
+[32m+[m[32m    {[m
+[32m+[m[32m        public IActionResult Index()[m
+[32m+[m[32m        {[m
+[32m+[m[32m            return View();[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[1mdiff --git a/CourseAndAcademicManagementSystem/CourseAndAcademicManagementSystem.Presentation/Controllers/HomeController.cs b/CourseAndAcademicManagementSystem/CourseAndAcademicManagementSystem.Presentation/Controllers/HomeController.cs[m
+[1mindex 8d0c7bc..ecb5c5b 100644[m
+[1m--- a/CourseAndAcademicManagementSystem/CourseAndAcademicManagementSystem.Presentation/Controllers/HomeController.cs[m
+[1m+++ b/CourseAndAcademicManagementSystem/CourseAndAcademicManagementSystem.Presentation/Controllers/HomeController.cs[m
+[36m@@ -7,14 +7,21 @@[m [mnamespace CourseAndAcademicManagementSystem.Presentation.Controllers[m
+     public class HomeController : Controller[m
+     {[m
+         private readonly ILogger<HomeController> _logger;[m
+[32m+[m[32m        private readonly AppDbContext context;[m
+ [m
+[31m-        public HomeController(ILogger<HomeController> logger)[m
+[32m+[m
+[32m+[m[32m        public HomeController(ILogger<HomeController> logger, AppDbContext context)[m
+         {[m
+             _logger = logger;[m
+[32m+[m[32m            this.context = context;[m
+         }[m
+ [m
+         public IActionResult Index()[m
+         {[m
+[32m+[m[32m            ViewBag.Courses = context.Courses.Count();[m
+[32m+[m[32m            ViewBag.Users = context.Users.Count();[m
+[32m+[m[32m            ViewBag.Sessions = context.Sessions.Count();[m
+[32m+[m[32m            ViewBag.Grades = context.Grades.Count();[m
+             return View();[m
+         }[m
+ [m
+[1mdiff --git a/CourseAndAcademicManagementSystem/CourseAndAcademicManagementSystem.Presentation/Controllers/SessionController.cs b/CourseAndAcademicManagementSystem/CourseAndAcademicManagementSystem.Presentation/Controllers/SessionController.cs[m
+[1mnew file mode 100644[m
+[1mindex 0000000..40bed71[m
+[1m--- /dev/null[m
+[1m+++ b/CourseAndAcademicManagementSystem/CourseAndAcademicManagementSystem.Presentation/Controllers/SessionController.cs[m
+[36m@@ -0,0 +1,114 @@[m
+[32m+[m[32m﻿using CAMS.BusinessLogic.Services.Interfaces;[m
+[32m+[m[32musing CAMS.BusinessLogic.ViewModels;[m
+[32m+[m[32musing Microsoft.AspNetCore.Mvc;[m
+[32m+[m
+[32m+[m[32mnamespace CAMS.Presentation.Controllers[m
+[32m+[m[32m{[m
+[32m+[m[32m    public class SessionController : Controller[m
+[32m+[m[32m    {[m
+[32m+[m[32m        private readonly ISessionService _sessionService;[m
+[32m+[m[32m        public SessionController(ISessionService sessionService)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            _sessionService = sessionService;[m
+[32m+[m[32m        }[m
+[32m+[m[32m        public async Task<IActionResult> Index(string searchCourseName, int pageNumber = 1, int pageSize = 5)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            var sessionVM = _sessionService.GetSessionsAsync(searchCourseName, pageNumber, pageSize);[m
+[32m+[m[32m            return View();[m
+[32m+[m[32m            /*[m
+[32m+[m[32m             * All Sessions include Courses And Instructors (Where search condition matches)[m
+[32m+[m[32m             * total pages, current page, search term[m
+[32m+[m[32m             */[m
+[32m+[m[32m        }[m
+[32m+[m[32m        [HttpGet][m
+[32m+[m[32m        public async Task<IActionResult> Create()[m
+[32m+[m[32m        {[m
+[32m+[m[32m            var sessionVM = new SessionViewModel[m
+[32m+[m[32m            {[m
+[32m+[m[32m                Courses = await _sessionService.GetCoursesForDropdownAsync()[m
+[32m+[m[32m                Instructors = await _sessionService.GetInstructorsForDropdownAsync()[m
+[32m+[m[32m            };[m
+[32m+[m[32m            return View(sessionVM);[m
+[32m+[m[32m        }[m
+[32m+[m[32m        [HttpPost][m
+[32m+[m[32m        public async Task<IActionResult> Create(SessionViewModel sessionVM)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            if (ModelState.IsValid)[m
+[32m+[m[32m            {[m
+[32m+[m[32m                try[m
+[32m+[m[32m                {[m
+[32m+[m[32m                    await _sessionService.CreateSessionAsync(sessionVM);[m
+[32m+[m[32m                    TempData["SuccessMessage"] = "Session created successfully!";[m
+[32m+[m[32m                    return RedirectToAction(nameof(Index));[m
+[32m+[m[32m                }[m
+[32m+[m[32m                catch (Exception ex)[m
+[32m+[m[32m                {[m
+[32m+[m[32m                    ModelState.AddModelError("", ex.Message);[m
+[32m+[m[32m                }[m
+[32m+[m[32m            }[m
+[32m+[m[32m            sessionVM.Courses = await _sessionService.GetCoursesForDropdownAsync();[m
+[32m+[m[32m            sessionVM.Instructors = await _sessionService.GetInstructorsForDropdownAsync();[m
+[32m+[m[32m            return View(sessionVM);[m
+[32m+[m[32m        }[m
+[32m+[m[32m        [HttpGet][m
+[32m+[m[32m        public async Task<IActionResult> Edit(int id)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            var sessionVM = await _sessionService.GetSessionByIdAsync(id);[m
+[32m+[m[32m            if (sessionVM == null) return NotFound();[m
+[32m+[m
+[32m+[m[32m            sessionVM.Courses = await _sessionService.GetCoursesForDropdownAsync();[m
+[32m+[m[32m            sessionVM.Instructors = await _sessionService.GetInstructorsForDropdownAsync();[m
+[32m+[m[32m            return View(sessionVM);[m
+[32m+[m[32m        }[m
+[32m+[m[32m        [HttpPost][m
+[32m+[m[32m        public async Task<IActionResult> Edit(SessionViewModel sessionVM)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            if (ModelState.IsValid)[m
+[32m+[m[32m            {[m
+[32m+[m[32m                try[m
+[32m+[m[32m                {[m
+[32m+[m[32m                    await _sessionService.UpdateSessionAsync(sessionVM);[m
+[32m+[m[32m                    TempData["SuccessMessage"] = "Session updated successfully!";[m
+[32m+[m[32m                    return RedirectToAction(nameof(Index));[m
+[32m+[m[32m                }[m
+[32m+[m[32m                catch (Exception ex)[m
+[32m+[m[32m                {[m
+[32m+[m[32m                    ModelState.AddModelError("", ex.Message);[m
+[32m+[m[32m                }[m
+[32m+[m[32m            }[m
+[32m+[m[32m            sessionVM.Courses = await _sessionService.GetCoursesForDropdownAsync();[m
+[32m+[m[32m            sessionVM.Instructors = await _sessionService.GetInstructorsForDropdownAsync();[m
+[32m+[m[32m            return View(sessionVM);[m
+[32m+[m[32m        }[m
+[32m+[m[32m        [HttpPost][m
+[32m+[m[32m        public async Task<IActionResult> Delete(int id)[m
+[32m+[m[32m        {[m
+[32m+[m[41m            [m
+[32m+[m[32m            var deleted = await _sessionService.DeleteSessionAsync(id);[m
+[32m+[m[32m            if (!deleted)[m
+[32m+[m[32m            {[m
+[32m+[m[32m                return Json(new { success = false, message = "Error while deleting session" });[m
+[32m+[m[32m            }[m
+[32m+[m
+[32m+[m[32m            return Json(new { success = true, message = "Session deleted successfully" });[m
+[32m+[m[32m        }[m
+[32m+[m[32m        // Remote Validation for StartDate[m
+[32m+[m[32m        public async Task<IActionResult> ValidateStartDate(DateTime startDate)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            if (_sessionService.ValidateStartDate(startDate))[m
+[32m+[m[32m            {[m
+[32m+[m[32m                return Json(true);[m
+[32m+[m[32m            }[m
+[32m+[m[32m            return Json("Start date cannot be in the past.");[m
+[32m+[m[32m        }[m
+[32m+[m[32m        // Remote Validation for EndDate[m
+[32m+[m[32m        public async Task<IActionResult> ValidateEndDate(DateTime startDate, DateTime endDate)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            if (_sessionService.ValidateEndDate(startDate, endDate))[m
+[32m+[m[32m            {[m
+[32m+[m[32m                return Json(true);[m
+[32m+[m[32m            }[m
+[32m+[m[32m            return Json("End date must be after Start Date.");[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[1mdiff --git a/CourseAndAcademicManagementSystem/CourseAndAcademicManagementSystem.Presentation/Controllers/UserController.cs b/CourseAndAcademicManagementSystem/CourseAndAcademicManagementSystem.Presentation/Controllers/UserController.cs[m
+[1mnew file mode 100644[m
+[1mindex 0000000..143d149[m
+[1m--- /dev/null[m
+[1m+++ b/CourseAndAcademicManagementSystem/CourseAndAcademicManagementSystem.Presentation/Controllers/UserController.cs[m
+[36m@@ -0,0 +1,96 @@[m
+[32m+[m[32m﻿using CAMS.BusinessLogic.Services.Classes;[m
+[32m+[m[32musing CAMS.BusinessLogic.Services.Interfaces;[m
+[32m+[m[32musing CAMS.BusinessLogic.ViewModels;[m
+[32m+[m[32musing Microsoft.AspNetCore.Mvc;[m
+[32m+[m
+[32m+[m[32mnamespace CAMS.Presentation.Controllers[m
+[32m+[m[32m{[m
+[32m+[m[32m    public class UserController : Controller[m
+[32m+[m[32m    {[m
+[32m+[m[32m        private readonly IUserService userService;[m
+[32m+[m[32m        public UserController(IUserService userService)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            this.userService = userService;[m
+[32m+[m[32m        }[m
+[32m+[m[32m        public async Task<IActionResult> Index(string? search, string? searchRole, int pageNumber = 1, int pageSize = 10)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            var userVM = await userService.GetUsersAsync(role: searchRole, search: search, pageNumber: pageNumber, pageSize: pageSize);[m
+[32m+[m
+[32m+[m[32m            return View(userVM);[m
+[32m+[m[32m            /*[m
+[32m+[m[32m             userVM -> Users , SearchName, SearchRole, CurrentPage, TotalPages[m
+[32m+[m[32m             */[m
+[32m+[m[32m        }[m
+[32m+[m[32m        public IActionResult Create()[m
+[32m+[m[32m        {[m
+[32m+[m[32m            return View(new UserViewModel());[m
+[32m+[m[32m        }[m
+[32m+[m[32m        [HttpPost][m
+[32m+[m[32m        public async Task<IActionResult> Create(UserViewModel userVM)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            if (ModelState.IsValid)[m
+[32m+[m[32m            {[m
+[32m+[m[32m                await userService.CreateUserAsync(userVM);[m
+[32m+[m[32m                TempData["SuccessMessage"] = "User created successfully!";[m
+[32m+[m[32m                return RedirectToAction("Index");[m
+[32m+[m[32m            }[m
+[32m+[m
+[32m+[m[32m            return View(userVM);[m
+[32m+[m[32m        }[m
+[32m+[m[32m        [HttpGet][m
+[32m+[m[32m        public async Task<IActionResult> Edit(int id)[m
+[32m+[m[32m        {[m
+[32m+[m[32m            var user = await userService.GetUserByIdAsync(id);[m
+[32m+[m[32m            if (user == null)[m
+[32m+[m[32m                return NotFound();[m
+[32m+[m[32m            var userVM = new UserViewModel[m
+[32m+[m[32m            {[m
+[32m+[m[32m                UserId = user.UserId,[m
+[32m+[m[32m                FirstName = user.FirstName,[m
+[32m+[m[32m                LastName = user.LastName,[m
+[32m+[m[32m                IsActive = user.IsActive,[m
+[32m+[m[32m                Email = user.Email,[m
+[32m+[m[32m                Role = user.Role,[m
+[32m+[m[32m  

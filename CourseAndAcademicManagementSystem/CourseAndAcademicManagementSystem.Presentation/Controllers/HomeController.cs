@@ -7,14 +7,21 @@ namespace CourseAndAcademicManagementSystem.Presentation.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly AppDbContext context;
 
-        public HomeController(ILogger<HomeController> logger)
+
+        public HomeController(ILogger<HomeController> logger, AppDbContext context)
         {
             _logger = logger;
+            this.context = context;
         }
 
         public IActionResult Index()
         {
+            ViewBag.Courses = context.Courses.Count();
+            ViewBag.Users = context.Users.Count();
+            ViewBag.Sessions = context.Sessions.Count();
+            ViewBag.Grades = context.Grades.Count();
             return View();
         }
 

@@ -13,6 +13,10 @@ namespace CAMS.BusinessLogic.ViewModels.Shared
         public int PageSize { get; set; } = 10;
         public int TotalCount { get; set; }
 
+        public bool HasPreviousPage => PageNumber > 1; // omar
+
+        public bool HasNextPage => PageNumber < TotalPages; // omar
+
         public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
     }
 }

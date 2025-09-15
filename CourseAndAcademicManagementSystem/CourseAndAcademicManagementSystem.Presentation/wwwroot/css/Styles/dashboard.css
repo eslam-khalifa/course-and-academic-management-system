@@ -1,0 +1,109 @@
+﻿/* =======================
+   Global Styles
+   ======================= */
+body {
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+/* =======================
+   Layout Wrapper
+   ======================= */
+.wrapper {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* =======================
+   Sidebar
+   ======================= */
+.sidebar {
+    width: 250px;
+    min-height: 100vh;
+    background: #0d6efd;
+    color: #fff;
+    flex-shrink: 0;
+    transition: transform 0.3s ease-in-out;
+    position: relative; /* Desktop: visible by default */
+    transform: translateX(0);
+    z-index: 1;
+}
+
+    .sidebar .sidebar-header {
+        padding: 20px;
+        font-size: 1.2rem;
+        background: #084298;
+        text-align: center;
+    }
+
+    .sidebar .nav-link {
+        color: #fff;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        transition: background 0.3s ease;
+    }
+
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background: #084298;
+            color: #fff;
+        }
+
+/* =======================
+   Main Content
+   ======================= */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    transition: margin-left 0.3s ease-in-out;
+}
+
+/* =======================
+   Navbar
+   ======================= */
+.navbar-custom {
+    background: #fff;
+    border-bottom: 1px solid #dee2e6;
+    padding: 10px 15px;
+}
+
+/* =======================
+   Overlay for Mobile
+   ======================= */
+body.sidebar-open::before {
+    content: "";
+    position: fixed;
+    inset: 0; /* top:0; right:0; bottom:0; left:0; */
+    background: rgba(0,0,0,0.4);
+    z-index: 1049;
+}
+
+/* =======================
+   Responsive - Mobile/Tablet
+   ======================= */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed; /* fixed so it sits above content */
+        top: 0;
+        left: 0;
+        height: 100%;
+        transform: translateX(-100%); /* Hidden by default on small screens */
+        z-index: 1050;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+        /* Show Sidebar when JS adds .show class */
+        .sidebar.show {
+            transform: translateX(0);
+        }
+}

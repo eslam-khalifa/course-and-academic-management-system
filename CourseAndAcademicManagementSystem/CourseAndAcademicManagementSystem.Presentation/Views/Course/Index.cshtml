@@ -1,0 +1,136 @@
+﻿@using CAMS.BusinessLogic.ViewModels.CourseViewModels
+@model CourseListViewModel
+
+@{
+    var pagedCourses = Model.PagedCourses;
+    int maxPagesToShow = 5; // عدد الصفحات التي ستظهر في المنتصف
+    int startPage = Math.Max(1, pagedCourses.PageNumber - maxPagesToShow / 2);
+    int endPage = Math.Min(pagedCourses.TotalPages, startPage + maxPagesToShow - 1);
+
+    // إذا كان آخر صفحة - أول صفحة أقل من maxPagesToShow
+    if ((endPage - startPage + 1) < maxPagesToShow)
+    {
+        startPage = Math.Max(1, endPage - maxPagesToShow + 1);
+    }
+}
+
+<h2>Courses</h2>
+
+<partial name="_alert" />
+
+
+<form method="get" asp-action="Index" class="mb-3">
+    <input type="text" name="searchTerm" value="@Model.SearchTerm" placeholder="Search..." class="form-control d-inline-block w-25" />
+    <input type="text" name="category" value="@Model.Category" placeholder="Category..." class="form-control d-inline-block w-25 mx-2" />
+    <button type="submit" class="btn btn-primary">Search</button>
+    <a asp-action="Create" class="btn btn-success float-end">Create New</a>
+</form>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Code</th>
+            <th>Category</th>
+            <th>Instructor</th>
+            <th>Is Active</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var course in Model.PagedCourses.Items)
+        {
+            <tr>
+                <td>@course.Name</td>
+                <td>@course.Code</td>
+                <td>@course.Category</td>
+                <td>@course.InstructorName</td>
+                <td>@(course.IsActive ? "Yes" : "No")</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@course.CourseId" class="btn btn-warning btn-sm">Edit</a>
+                    <button class="btn btn-danger btn-sm delete-course" data-id="@course.CourseId">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+
+@if (pagedCourses.TotalPages > 1)
+{
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+
+            <!-- First Page -->
+            <li class="page-item @(pagedCourses.PageNumber == 1 ? "disabled" : "")">
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-pageNumber="1"
+                   asp-route-searchTerm="@Model.SearchTerm"
+                   asp-route-category="@Model.Category"
+                   aria-label="First">
+                    «
+                </a>
+            </li>
+
+            <!-- Previous Page -->
+            <li class="page-item @(pagedCourses.HasPreviousPage ? "" : "disabled")">
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-pageNumber="@(pagedCourses.PageNumber - 1)"
+                   asp-route-searchTerm="@Model.SearchTerm"
+                   asp-route-category="@Model.Category"
+                   aria-label="Previous">
+                    ‹
+                </a>
+            </li>
+
+            <!-- Page Numbers -->
+            @for (int i = startPage; i <= endPage; i++)
+            {
+                <li class="page-item @(i == pagedCourses.PageNumber ? "active" : "")">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-pageNumber="@i"
+                       asp-route-searchTerm="@Model.SearchTerm"
+                       asp-route-category="@Model.Category">@i</a>
+                </li>
+            }
+
+            <!-- Next Page -->
+            <li class="page-item @(pagedCourses.HasNextPage ? "" : "disabled")">
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-pageNumber="@(pagedCourses.PageNumber + 1)"
+                   asp-route-searchTerm="@Model.SearchTerm"
+                   asp-route-category="@Model.Category"
+                   aria-label="Next">
+                    ›
+                </a>
+            </li>
+
+            <!-- Last Page -->
+            <li class="page-item @(pagedCourses.PageNumber == pagedCourses.TotalPages ? "disabled" : "")">
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-pageNumber="@pagedCourses.TotalPages"
+                   asp-route-searchTerm="@Model.SearchTerm"
+                   asp-route-category="@Model.Category"
+                   aria-label="Last">
+                    »
+                </a>
+            </li>
+        </ul>
+    </nav>
+}
+
+
+<div>
+    <a class="btn btn-outline-primary" asp-controller="Course" asp-action="Create">Add Course</a>
+</div>
+
+
+@section Scripts {
+    <script src="~/js/delete.js"></script>
+}
