@@ -20,7 +20,7 @@ namespace DataAccessLayer.Configurations
 
         public void Configure(EntityTypeBuilder<Session> builder)
         {
-            builder.HasOne(c=>c.Course).WithMany().HasForeignKey(c=>c.CourseId);
+            builder.HasOne(c=>c.Course).WithMany().HasForeignKey(c=>c.CourseId).OnDelete(DeleteBehavior.SetNull); ;
             builder.Property(c=>c.Title).HasColumnType("nvarchar(100)");
 
             builder.Property(c=>c.SessionCode).HasColumnType("nvarchar(30)");

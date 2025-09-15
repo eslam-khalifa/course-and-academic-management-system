@@ -43,8 +43,6 @@ namespace CAMS.BusinessLogic.ViewModels.CourseViewModels
 
         public int? InstructorId { get; set; }
 
-        public UserApp Instructor { get; set; } = null!;
-
         public string? ThumbnailUrl { get; set; }
 
         public DateTime CreatedAt { get; set; }

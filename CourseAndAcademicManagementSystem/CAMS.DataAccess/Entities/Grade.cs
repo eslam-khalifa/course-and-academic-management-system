@@ -1,3 +1,4 @@
+using CAMS.DataAccess.Entities;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -14,8 +15,8 @@ namespace DataAccessLayer.Entities
     {
         public int SessionId { get; set; }
         public Session Session { get; set; } = null!;
-        public int TraineeId { get; set; }
-        public UserApp Trainee { get; set; } = null!;
+        public int? TraineeId { get; set; }
+        public User? Trainee { get; set; } 
         public int Value { get; set; }
         public decimal? Weight { get; set; }
         public int AttemptNumber { get; set; } = 1;

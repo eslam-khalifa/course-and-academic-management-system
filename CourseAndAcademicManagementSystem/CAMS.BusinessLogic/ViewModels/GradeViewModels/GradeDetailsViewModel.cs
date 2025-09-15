@@ -12,8 +12,8 @@ namespace CAMS.BusinessLogic.ViewModels.GradeViewModels
         public int GradeId { get; set; }
         public int SessionId { get; set; }
         public Session Session { get; set; } = null!;
-        public int TraineeId { get; set; }
-        public UserApp Trainee { get; set; } = null!;
+        public int? TraineeId { get; set; }
+        public UserVM? Trainee { get; set; } = null!;
         public int Value { get; set; }
         public decimal? Weight { get; set; }
         public int AttemptNumber { get; set; } = 1;

@@ -16,7 +16,7 @@ namespace CAMS.BusinessLogic.ViewModels.GradeViewModels
         public string? SessionName { get; set; }
 
         [Required]
-        public int TraineeId { get; set; }
+        public int? TraineeId { get; set; }
 
         public string? TraineeName { get; set; }
 

@@ -1,3 +1,4 @@
+using CAMS.DataAccess.Entities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -31,9 +32,9 @@ namespace DataAccessLayer.Entities
 
         public int? Capacity { get; set; }
 
-        public int InstructorId { get; set; }
+        public int? InstructorId { get; set; }
 
-        public UserApp Instructor { get; set; } = null!;
+        public User? Instructor { get; set; } 
 
         public string Status { get; set; } = null!;
 

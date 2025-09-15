@@ -1,4 +1,6 @@
-﻿using System;
+﻿using CAMS.BusinessLogic.ViewModels;
+using CAMS.DataAccess.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,10 +10,13 @@ namespace CAMS.BusinessLogic.Services.Interfaces
 {
     public interface IUserService
     {
-        Task<User> CreateUserAsync(User user);
-        Task<User> UpdateUserAsync(User user);
-        Task<bool> DeleteUserAsync(int userId);
-        Task<User?> GetUserByIdAsync(int userId);
-        Task<IEnumerable<User>> GetUsersAsync(string? role = null, string? search = null, int pageNumber = 1, int pageSize = 10);
+        Task<IEnumerable<UserVM>> GetAllAsync(QueryUser queryUser);
+        //Task<int> GetCountAsync(QueryUser queryUser);
+        Task<UserVM?> GetByIdAsync(int id);
+        Task<UserVM> CreateAsync(UserVM user);
+        Task<UserVM?> UpdateAsync(UserVM user);
+        Task<UserVM> DeleteAsync(int id);
+       // Task<bool> IsEmailUniqueAsync(string email, int excludeId = 0);
     }
 }
+

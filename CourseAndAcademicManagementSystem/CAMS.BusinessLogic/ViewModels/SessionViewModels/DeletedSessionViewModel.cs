@@ -30,7 +30,6 @@ namespace CAMS.BusinessLogic.ViewModels.SessionViewModels
 
         public int InstructorId { get; set; }
 
-        public UserApp Instructor { get; set; } = null!;
 
         public string Status { get; set; } = null!;
 

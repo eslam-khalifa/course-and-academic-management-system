@@ -1,6 +1,7 @@
 ﻿using CAMS.BusinessLogic.Services.Interfaces;
 using CAMS.BusinessLogic.ViewModels.SessionViewModels;
 using CAMS.BusinessLogic.ViewModels.Shared;
+using CAMS.DataAccess.Entities;
 using DataAccessLayer.Entities;
 using DataAccessLayer.IUnitOfWorkAndImplementation;
 using System;
@@ -22,7 +23,7 @@ namespace CAMS.BusinessLogic.Services.Classes
         {
             var sessionRepo = _unitOfWork.Repository<Session, int>();
             var courseRepo = _unitOfWork.Repository<Course, int>();
-            var userRepo = _unitOfWork.Repository<UserApp, int>();
+            var userRepo = _unitOfWork.Repository<User, int>();
 
             // Business Rule: Validate Course exists
             var course = await courseRepo.GetByIdAsync(vm.CourseId);
@@ -67,7 +68,7 @@ namespace CAMS.BusinessLogic.Services.Classes
                 StartDate = session.StartDate,
                 EndDate = session.EndDate,
                 InstructorId = session.InstructorId,
-                InstructorName = session.Instructor?.DisplayName,
+                InstructorName = session.Instructor?.Name,
                 Status = session.Status
             };
         }
@@ -76,7 +77,7 @@ namespace CAMS.BusinessLogic.Services.Classes
         {
             var sessionRepo = _unitOfWork.Repository<Session, int>();
             var courseRepo = _unitOfWork.Repository<Course, int>();
-            var userRepo = _unitOfWork.Repository<UserApp, int>();
+            var userRepo = _unitOfWork.Repository<User, int>();
 
             var existing = await sessionRepo.GetByIdAsync(vm.SessionId);
             if (existing == null) throw new Exception("Session not found");
@@ -117,7 +118,7 @@ namespace CAMS.BusinessLogic.Services.Classes
                 StartDate = existing.StartDate,
                 EndDate = existing.EndDate,
                 InstructorId = existing.InstructorId,
-                InstructorName = existing.Instructor?.DisplayName,
+                InstructorName = existing.Instructor?.Name,
                 Status = existing.Status
             };
         }
@@ -156,7 +157,6 @@ namespace CAMS.BusinessLogic.Services.Classes
                 Location = session.Location,
                 Capacity = session.Capacity,
                 InstructorId = session.InstructorId,
-                Instructor = session.Instructor!,
                 Status = session.Status,
                 Mode = session.Mode,
                 CreatedAt = session.CreatedAt,
@@ -167,18 +167,13 @@ namespace CAMS.BusinessLogic.Services.Classes
         }
 
         public async Task<PagedResultViewModel<SessionViewModel>> GetSessionsAsync(
-            int? courseId = null,
-            string? search = null,
+            int? courseId ,
+            string? search ,
             int pageNumber = 1,
-            int pageSize = 10)
+            int pageSize = 5)
         {
-            var sessionRepo = _unitOfWork.Repository<Session, int>();
-            var (items, totalCount) = await sessionRepo.GetPagedAsync(
-                filter: s => (!courseId.HasValue || s.CourseId == courseId) &&
-                             (string.IsNullOrEmpty(search) || s.Title.Contains(search)),
-                pageNumber: pageNumber,
-                pageSize: pageSize
-            );
+           var spec = new SessionSpecification(courseId, search, pageNumber, pageSize);
+            var items = await _unitOfWork.Repository<Session, int>().GetAllAsync(spec);
 
             return new PagedResultViewModel<SessionViewModel>
             {
@@ -191,12 +186,11 @@ namespace CAMS.BusinessLogic.Services.Classes
                     StartDate = s.StartDate,
                     EndDate = s.EndDate,
                     InstructorId = s.InstructorId,
-                    InstructorName = s.Instructor?.DisplayName,
+                    InstructorName = s.Instructor?.Name,
                     Status = s.Status
                 }),
                 PageNumber = pageNumber,
                 PageSize = pageSize,
-                TotalCount = totalCount
             };
         }
     }

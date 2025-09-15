@@ -1,6 +1,7 @@
 ﻿using CAMS.BusinessLogic.Services.Interfaces;
 using CAMS.BusinessLogic.ViewModels.GradeViewModels;
 using CAMS.BusinessLogic.ViewModels.Shared;
+using CAMS.DataAccess.Entities;
 using DataAccessLayer.Entities;
 using DataAccessLayer.IUnitOfWorkAndImplementation;
 using System;
@@ -23,7 +24,7 @@ namespace CAMS.BusinessLogic.Services.Classes
         {
             var gradeRepo = _unitOfWork.Repository<Grade, int>();
             var sessionRepo = _unitOfWork.Repository<Session, int>();
-            var userRepo = _unitOfWork.Repository<UserApp, int>();
+            var userRepo = _unitOfWork.Repository<User, int>();
 
             // Validate session exists
             var session = await sessionRepo.GetByIdAsync(gradeVm.SessionId);
@@ -39,11 +40,9 @@ namespace CAMS.BusinessLogic.Services.Classes
             if (!trainee.Role.Equals("Trainee", StringComparison.OrdinalIgnoreCase))
                 throw new Exception("User is not a trainee");
 
-            // Validate value
             if (gradeVm.Value < 0 || gradeVm.Value > 100)
                 throw new Exception("Grade value must be between 0 and 100");
 
-            // Validate unique final grade
             if (gradeVm.IsFinal == true)
             {
                 var existingFinal = await gradeRepo.ExistsAsync(
@@ -53,7 +52,6 @@ namespace CAMS.BusinessLogic.Services.Classes
                     throw new Exception("Final grade already exists for this trainee in this session");
             }
 
-            // Map VM -> Entity
             var grade = new Grade
             {
                 SessionId = gradeVm.SessionId,
@@ -69,14 +67,14 @@ namespace CAMS.BusinessLogic.Services.Classes
             await gradeRepo.AddAsync(grade);
             await _unitOfWork.SaveChangesAsync();
 
-            // Map Entity -> VM
+            
             return new GradeViewModel
             {
                 GradeId = grade.Id,
                 SessionId = grade.SessionId,
                 SessionName = session.Title,
                 TraineeId = grade.TraineeId,
-                TraineeName = trainee.DisplayName,
+                TraineeName = trainee.Name,
                 Value = grade.Value,
                 Weight = grade.Weight,
                 IsFinal = grade.IsFinal,
@@ -88,7 +86,7 @@ namespace CAMS.BusinessLogic.Services.Classes
         {
             var gradeRepo = _unitOfWork.Repository<Grade, int>();
             var sessionRepo = _unitOfWork.Repository<Session, int>();
-            var userRepo = _unitOfWork.Repository<UserApp, int>();
+            var userRepo = _unitOfWork.Repository<User, int>();
 
             var existing = await gradeRepo.GetByIdAsync(gradeVm.GradeId);
             if (existing == null) throw new Exception("Grade not found");
@@ -135,7 +133,7 @@ namespace CAMS.BusinessLogic.Services.Classes
                 SessionId = existing.SessionId,
                 SessionName = session.Title,
                 TraineeId = existing.TraineeId,
-                TraineeName = trainee.DisplayName,
+                TraineeName = trainee.Name,
                 Value = existing.Value,
                 Weight = existing.Weight,
                 IsFinal = existing.IsFinal,
@@ -181,28 +179,24 @@ namespace CAMS.BusinessLogic.Services.Classes
             };
         }
 
-        public async Task<PagedResultViewModel<GradeViewModel>> GetGradesAsync(
-            int? sessionId = null, int? traineeId = null,
+        public async Task<PagedResultViewModel<GradeViewModel>> GetGradesAsync(string TraineeName,
+            int? sessionId , int? traineeId ,
             int pageNumber = 1, int pageSize = 10)
         {
-            var gradeRepo = _unitOfWork.Repository<Grade, int>();
-            var (items, totalCount) = await gradeRepo.GetPagedAsync(
-                filter: g =>
-                    (!sessionId.HasValue || g.SessionId == sessionId) &&
-                    (!traineeId.HasValue || g.TraineeId == traineeId),
-                pageNumber: pageNumber,
-                pageSize: pageSize
-            );
+            var spec = new GradeSpecification(TraineeName, sessionId, traineeId, pageNumber, pageSize);
+            var gradeRepo = await _unitOfWork.Repository<Grade, int>().GetAllAsync(spec);
+            
+           
 
             return new PagedResultViewModel<GradeViewModel>
             {
-                Items = items.Select(g => new GradeViewModel
+                Items = gradeRepo.Select(g => new GradeViewModel
                 {
                     GradeId = g.Id,
                     SessionId = g.SessionId,
                     SessionName = g.Session?.Title ?? string.Empty,
                     TraineeId = g.TraineeId,
-                    TraineeName = g.Trainee?.DisplayName ?? string.Empty,
+                    TraineeName = g.Trainee?.Name ?? string.Empty,
                     Value = g.Value,
                     Weight = g.Weight,
                     IsFinal = g.IsFinal,
@@ -210,7 +204,7 @@ namespace CAMS.BusinessLogic.Services.Classes
                 }),
                 PageNumber = pageNumber,
                 PageSize = pageSize,
-                TotalCount = totalCount
+               
             };
         }
     }

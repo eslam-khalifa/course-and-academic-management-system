@@ -1,6 +1,7 @@
 ﻿using CAMS.BusinessLogic.Services.Interfaces;
 using CAMS.BusinessLogic.ViewModels.CourseViewModels;
 using CAMS.BusinessLogic.ViewModels.Shared;
+using CAMS.DataAccess.Entities;
 using DataAccessLayer.Entities;
 using DataAccessLayer.IUnitOfWorkAndImplementation;
 using System;
@@ -22,7 +23,8 @@ namespace CAMS.BusinessLogic.Services.Classes
         public async Task<CourseViewModel> CreateCourseAsync(CreatedCourseViewModel courseVm)
         {
             var courseRepo = _unitOfWork.Repository<Course, int>();
-            var userRepo = _unitOfWork.Repository<UserApp, int>();
+
+            var userRepo = _unitOfWork.Repository<User, int>();
 
             // Business rule: Name must not contain numbers
             if (courseVm.Name.Any(char.IsDigit))
@@ -68,14 +70,14 @@ namespace CAMS.BusinessLogic.Services.Classes
                 Category = course.Category,
                 IsActive = course.IsActive,
                 InstructorId = course.InstructorId,
-                InstructorName = course.Instructor?.DisplayName
+                InstructorName = course.Instructor?.Name
             };
         }
 
         public async Task<CourseViewModel> UpdateCourseAsync(UpdatedCourseViewModel courseVm)
         {
             var courseRepo = _unitOfWork.Repository<Course, int>();
-            var userRepo = _unitOfWork.Repository<UserApp, int>();
+            var userRepo = _unitOfWork.Repository<User, int>();
             var sessionRepo = _unitOfWork.Repository<Session, int>();
 
             var existing = await courseRepo.GetByIdAsync(courseVm.CourseId);
@@ -93,7 +95,7 @@ namespace CAMS.BusinessLogic.Services.Classes
             // Business rule: Cannot deactivate course with scheduled sessions
             if (!courseVm.IsActive)
             {
-                var hasSessions = await sessionRepo.ExistsAsync(s => s.CourseId == courseVm.CourseId && !s.IsCompleted);
+                var hasSessions = await sessionRepo.ExistsAsync(s => s.CourseId == courseVm.CourseId );
                 if (hasSessions)
                     throw new Exception("Cannot inactivate course with scheduled sessions");
             }
@@ -130,7 +132,7 @@ namespace CAMS.BusinessLogic.Services.Classes
                 Category = existing.Category,
                 IsActive = existing.IsActive,
                 InstructorId = existing.InstructorId,
-                InstructorName = existing.Instructor?.DisplayName
+                InstructorName = existing.Instructor?.Name
             };
         }
 
@@ -163,34 +165,30 @@ namespace CAMS.BusinessLogic.Services.Classes
                 Category = course.Category,
                 IsActive = course.IsActive,
                 InstructorId = course.InstructorId,
-                InstructorName = course.Instructor?.DisplayName
+                InstructorName = course.Instructor?.Name
             };
         }
 
         public async Task<PagedResultViewModel<CourseViewModel>> GetCoursesAsync(string? search = null, int pageNumber = 1, int pageSize = 10)
         {
-            var courseRepo = _unitOfWork.Repository<Course, int>();
-            var (items, totalCount) = await courseRepo.GetPagedAsync(
-                filter: c => string.IsNullOrEmpty(search) || c.Name.Contains(search),
-                pageNumber: pageNumber,
-                pageSize: pageSize
-            );
-
+            var spec=new CourseSpecification(search, pageNumber, pageSize);
+            var courseRepo = await _unitOfWork.Repository<Course, int>().GetAllAsync(spec);
+          
             return new PagedResultViewModel<CourseViewModel>
             {
-                Items = items.Select(c => new CourseViewModel
+                Items = courseRepo.Select(c => new CourseViewModel
                 {
-                    CourseId = c.CourseId,
+                    CourseId = c.Id,
                     Name = c.Name,
                     Code = c.Code,
                     Category = c.Category,
                     IsActive = c.IsActive,
                     InstructorId = c.InstructorId,
-                    InstructorName = c.Instructor?.FullName
+                    InstructorName = c.Instructor?.Name,
                 }),
                 PageNumber = pageNumber,
                 PageSize = pageSize,
-                TotalCount = totalCount
+               
             };
         }
     }

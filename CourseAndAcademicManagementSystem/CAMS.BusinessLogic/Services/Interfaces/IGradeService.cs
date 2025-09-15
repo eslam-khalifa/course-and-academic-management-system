@@ -15,7 +15,7 @@ namespace CAMS.BusinessLogic.Services.Interfaces
         Task<GradeViewModel> UpdateGradeAsync(UpdatedGradeViewModel grade);
         Task<OperationResultViewModel> DeleteGradeAsync(int gradeId);
         Task<GradeDetailsViewModel?> GetGradeByIdAsync(int gradeId);
-        public Task<PagedResultViewModel<GradeViewModel>> GetGradesAsync(
+        public Task<PagedResultViewModel<GradeViewModel>> GetGradesAsync(string TraineeName,
             int? sessionId = null, int? traineeId = null,
             int pageNumber = 1, int pageSize = 10);
     }

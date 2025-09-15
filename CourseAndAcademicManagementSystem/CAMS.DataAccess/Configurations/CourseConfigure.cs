@@ -28,7 +28,7 @@ namespace DataAccessLayer.Configurations
 
             builder.Property(c=>c.Credits).HasMaxLength(10);
 
-            builder.HasOne(c=>c.Instructor).WithMany().HasForeignKey(c=>c.InstructorId);
+            builder.HasOne(c=>c.Instructor).WithMany().HasForeignKey(c=>c.InstructorId).OnDelete(DeleteBehavior.SetNull);
 
             builder.Property(c=>c.CreatedAt).HasDefaultValueSql("getdate()");
             builder.Property(c=>c.UpdatedAt).HasDefaultValueSql("getdate()");

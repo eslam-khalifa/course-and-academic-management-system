@@ -1,3 +1,4 @@
+using CAMS.DataAccess.Entities;
 using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
@@ -38,7 +39,7 @@ namespace DataAccessLayer.Entities
 
         public int? InstructorId { get; set; }
 
-        public UserApp Instructor { get; set; } = null!;
+        public User? Instructor { get; set; }
 
         public DateTime CreatedAt { get; set; }
 

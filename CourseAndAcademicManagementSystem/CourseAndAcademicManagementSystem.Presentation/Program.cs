@@ -1,3 +1,9 @@
+using DataAccessLayer.DbContexts;
+using DataAccessLayer.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+
 namespace CourseAndAcademicManagementSystem.Presentation
 {
     public class Program
@@ -9,7 +15,11 @@ namespace CourseAndAcademicManagementSystem.Presentation
             #region Add services to the container.
 
             builder.Services.AddControllersWithViews();
+            builder.Services.AddDbContext<LearningPlatformDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+            builder.Services.AddIdentity<UserApp, IdentityRole>().
+               AddEntityFrameworkStores<IdentityDbContext>();
             #endregion
 
             var app = builder.Build();

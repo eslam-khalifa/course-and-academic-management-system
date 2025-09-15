@@ -21,8 +21,8 @@ namespace DataAccessLayer.Configurations
         {
             
            
-            builder.HasOne(s => s.Session).WithMany().HasForeignKey(s => s.SessionId);
-            builder.HasOne(t => t.Trainee).WithMany().HasForeignKey(t => t.TraineeId);
+            builder.HasOne(s => s.Session).WithMany().HasForeignKey(s => s.SessionId).OnDelete(DeleteBehavior.SetNull);
+            builder.HasOne(t => t.Trainee).WithMany().HasForeignKey(t => t.TraineeId).OnDelete(DeleteBehavior.SetNull);
 
             builder.Property(g => g.Value)
                    .IsRequired().HasMaxLength(100);

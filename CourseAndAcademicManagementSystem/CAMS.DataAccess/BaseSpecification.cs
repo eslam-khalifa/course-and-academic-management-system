@@ -1,4 +1,4 @@
-`using DataAccessLayer.Contract;
+using DataAccessLayer.Contract;
 using DataAccessLayer.Entities;
 using System;
 using System.Collections.Generic;
