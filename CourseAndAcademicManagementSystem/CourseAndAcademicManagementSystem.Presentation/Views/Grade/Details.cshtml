@@ -1,0 +1,35 @@
+﻿@model CAMS.BusinessLogic.ViewModels.GradeViewModels.GradeDetailsViewModel
+
+@{
+    ViewBag.Title = "Grade Details";
+}
+
+<div class="container mt-4">
+    <h2>Grade Details</h2>
+    <hr />
+
+    <dl class="row">
+        <dt class="col-sm-3">Session</dt>
+        <dd class="col-sm-9">@Model.Session?.Title</dd>
+
+        <dt class="col-sm-3">Trainee</dt>
+        <dd class="col-sm-9">@Model.Trainee?.DisplayName</dd>
+
+        <dt class="col-sm-3">Value</dt>
+        <dd class="col-sm-9">@Model.Value</dd>
+
+        <dt class="col-sm-3">Weight</dt>
+        <dd class="col-sm-9">@Model.Weight</dd>
+
+        <dt class="col-sm-3">Is Final</dt>
+        <dd class="col-sm-9">@(Model.IsFinal.HasValue && Model.IsFinal.Value ? "Yes" : "No")</dd>
+
+        <dt class="col-sm-3">Comments</dt>
+        <dd class="col-sm-9">@Model.Comments</dd>
+
+        <dt class="col-sm-3">Graded At</dt>
+        <dd class="col-sm-9">@Model.GradedAt?.ToString("yyyy-MM-dd HH:mm")</dd>
+    </dl>
+
+    <a href="@Url.Action("Index")" class="btn btn-secondary">Back to List</a>
+</div>

@@ -1,5 +1,83 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model CAMS.BusinessLogic.ViewModels.GradeViewModels.GradeListViewModel
+
 @{
+    ViewBag.Title = "Grades";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Grades</h2>
+        <a href="@Url.Action("Create", "Grades")" class="btn btn-primary">Add Grade</a>
+    </div>
+
+    <!-- Search Form -->
+    <form method="get" class="row mb-3">
+        <div class="col-md-4">
+            <input type="text" name="SearchTerm" class="form-control" placeholder="Search by trainee or session..." value="@Model.SearchTerm" />
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-secondary w-100">Search</button>
+        </div>
+    </form>
+
+    <!-- Grades Table -->
+    <table class="table table-striped table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Session</th>
+                <th>Trainee</th>
+                <th>Value</th>
+                <th>Weight</th>
+                <th>Is Final</th>
+                <th>Graded At</th>
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.PagedCourses.Items.Any())
+            {
+                foreach (var grade in Model.PagedCourses.Items)
+                {
+                    <tr>
+                        <td>@grade.SessionName</td>
+                        <td>@grade.TraineeName</td>
+                        <td>@grade.Value</td>
+                        <td>@grade.Weight</td>
+                        <td>@(grade.IsFinal.HasValue && grade.IsFinal.Value ? "Yes" : "No")</td>
+                        <td>@grade.GradedAt?.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td class="text-center">
+                            <a href="@Url.Action("Details", "Grades", new { id = grade.GradeId })" class="btn btn-sm btn-info">Details</a>
+                            <a href="@Url.Action("Edit", "Grades", new { id = grade.GradeId })" class="btn btn-sm btn-warning">Edit</a>
+                            <button class="btn btn-sm btn-danger" onclick="deleteGrade(@grade.GradeId)">Delete</button>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="7" class="text-center">No grades found.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <nav>
+        <ul class="pagination justify-content-center">
+            @{
+                int totalPages = (int)Math.Ceiling((double)Model.PagedCourses.TotalCount / Model.PagedCourses.PageSize);
+                for (int i = 1; i <= totalPages; i++)
+                {
+                    <li class="page-item @(Model.PagedCourses.PageNumber == i ? "active" : "")">
+                        <a class="page-link" href="?pageNumber=@i">@i</a>
+                    </li>
+                }
+            }
+        </ul>
+    </nav>
+</div>
+
+@section Scripts {
+    <script src="~/js/delete.js"></script>
 }
