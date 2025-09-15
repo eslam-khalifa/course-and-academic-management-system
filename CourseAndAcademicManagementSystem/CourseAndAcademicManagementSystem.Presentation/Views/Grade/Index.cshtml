@@ -38,9 +38,9 @@
             </tr>
         </thead>
         <tbody>
-            @if (Model.PagedCourses.Items.Any())
+            @if (Model.PagedGrades.Items.Any())
             {
-                foreach (var grade in Model.PagedCourses.Items)
+                foreach (var grade in Model.PagedGrades.Items)
                 {
                     <tr>
                         <td>@grade.SessionName</td>
@@ -70,10 +70,10 @@
     <nav>
         <ul class="pagination justify-content-center">
             @{
-                int totalPages = (int)Math.Ceiling((double)Model.PagedCourses.TotalCount / Model.PagedCourses.PageSize);
+                int totalPages = (int)Math.Ceiling((double)Model.PagedGrades.TotalCount / Model.PagedGrades.PageSize);
                 for (int i = 1; i <= totalPages; i++)
                 {
-                    <li class="page-item @(Model.PagedCourses.PageNumber == i ? "active" : "")">
+                    <li class="page-item @(Model.PagedGrades.PageNumber == i ? "active" : "")">
                         <a class="page-link" href="?pageNumber=@i">@i</a>
                     </li>
                 }

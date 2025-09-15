@@ -10,7 +10,7 @@ namespace CAMS.BusinessLogic.ViewModels.GradeViewModels
 {
     public class GradeListViewModel
     {
-        public PagedResultViewModel<GradeViewModel> PagedCourses { get; set; } = new PagedResultViewModel<GradeViewModel>();
+        public PagedResultViewModel<GradeViewModel> PagedGrades { get; set; } = new PagedResultViewModel<GradeViewModel>();
 
         public string? SearchTerm { get; set; }
     }

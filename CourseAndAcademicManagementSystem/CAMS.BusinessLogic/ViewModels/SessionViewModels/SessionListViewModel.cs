@@ -10,7 +10,7 @@ namespace CAMS.BusinessLogic.ViewModels.SessionViewModels
 {
     public class SessionListViewModel
     {
-        public PagedResultViewModel<SessionViewModel> PagedCourses { get; set; } = new PagedResultViewModel<SessionViewModel>();
+        public PagedResultViewModel<SessionViewModel> PagedSessions { get; set; } = new PagedResultViewModel<SessionViewModel>();
 
         public string? SearchTerm { get; set; }
     }

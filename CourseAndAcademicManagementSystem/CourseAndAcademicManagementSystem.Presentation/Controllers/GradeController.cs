@@ -3,6 +3,7 @@ using CAMS.BusinessLogic.Services.Interfaces;
 using CAMS.BusinessLogic.ViewModels.GradeViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Threading.Tasks;
 
 namespace CAMS.Presentation.Controllers
 {
@@ -15,18 +16,25 @@ namespace CAMS.Presentation.Controllers
             _gradeService = gradeService;
         }
 
-        public async Task<IActionResult> Index(int? sessionId, int? traineeId, int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> Index(string? traineeName, int? sessionId, int? traineeId, int pageNumber = 1, int pageSize = 10)
         {
-            var result = await _gradeService.GetGradesAsync(sessionId, traineeId, pageNumber, pageSize);
+            var result = await _gradeService.GetGradesAsync(
+                TraineeName: traineeName,
+                sessionId: sessionId,
+                traineeId: traineeId,
+                pageNumber: pageNumber,
+                pageSize: pageSize
+            );
 
             var model = new GradeListViewModel
             {
-                PagedCourses = result,
-                SearchTerm = null 
+                PagedGrades = result,
+                SearchTerm = traineeName
             };
 
             return View(model);
         }
+
         public async Task<IActionResult> Details(int id)
         {
             var grade = await _gradeService.GetGradeByIdAsync(id);
@@ -36,12 +44,12 @@ namespace CAMS.Presentation.Controllers
             return View(grade);
         }
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
             var model = new CreatedGradeViewModel
             {
-                Sessions = GetSessionsDropDown(),
-                Trainees = GetSessionsDropDown()
+                Sessions = await _gradeService.GetSessionDropDownAsync(),
+                Trainees = await _gradeService.GetTraineeDropDownAsync()
             };
 
             return View(model);
@@ -75,8 +83,8 @@ namespace CAMS.Presentation.Controllers
                 AttemptNumber = grade.AttemptNumber,
                 IsFinal = grade.IsFinal,
                 Comments = grade.Comments,
-                Sessions = GetSessionsDropDown(),
-                Trainees = GetSessionsDropDown()
+                Sessions = await _gradeService.GetSessionDropDownAsync(),
+                Trainees = await _gradeService.GetTraineeDropDownAsync()
             };
 
             return View(model);

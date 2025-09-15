@@ -1,9 +1,11 @@
 ﻿using CAMS.BusinessLogic.Services.Interfaces;
+using CAMS.BusinessLogic.ViewModels;
 using CAMS.BusinessLogic.ViewModels.SessionViewModels;
 using CAMS.BusinessLogic.ViewModels.Shared;
 using CAMS.DataAccess.Entities;
 using DataAccessLayer.Entities;
 using DataAccessLayer.IUnitOfWorkAndImplementation;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -192,6 +194,40 @@ namespace CAMS.BusinessLogic.Services.Classes
                 PageNumber = pageNumber,
                 PageSize = pageSize,
             };
+        }
+
+        public async Task<IEnumerable<SelectListItem>> GetCoursesForDropdownAsync()
+        {
+            var courseRepo = _unitOfWork.Repository<Course, int>();
+            var courses = await courseRepo.GetAllAsync();
+            return courses.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = c.Name
+            });
+        }
+
+        public async Task<IEnumerable<SelectListItem>> GetInstructorsForDropdownAsync()
+        {
+            var userRepo = _unitOfWork.Repository<User, int>();
+
+            var queryUser = new QueryUser
+            {
+                Role = "Instructor",
+                PageSize = int.MaxValue,
+                PageIndex = 0,
+                Search = "asc"
+            };
+
+            var spec = new UserSpecification(queryUser);
+
+            var instructors = await userRepo.GetAllAsync(spec);
+
+            return instructors.Select(i => new SelectListItem
+            {
+                Value = i.Id.ToString(),
+                Text = i.Name
+            });
         }
     }
 }

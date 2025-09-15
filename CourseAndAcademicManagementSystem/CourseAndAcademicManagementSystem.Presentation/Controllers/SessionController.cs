@@ -19,7 +19,7 @@ namespace CAMS.Presentation.Controllers
             var vm = new SessionListViewModel
             {
                 SearchTerm = search,
-                PagedCourses = sessions
+                PagedSessions = sessions
             };
 
             return View(vm);
@@ -50,8 +50,8 @@ namespace CAMS.Presentation.Controllers
         {
             if (!ModelState.IsValid)
             {
-                vm.Courses = await GetCoursesForDropdownAsync();
-                vm.Instructors = await GetInstructorsForDropdownAsync();
+                vm.Courses = await _sessionService.GetCoursesForDropdownAsync();
+                vm.Instructors = await _sessionService.GetInstructorsForDropdownAsync();
                 return View(vm);
             }
 
@@ -64,8 +64,8 @@ namespace CAMS.Presentation.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError("", ex.Message);
-                vm.Courses = await GetCoursesForDropdownAsync();
-                vm.Instructors = await GetInstructorsForDropdownAsync();
+                vm.Courses = await _sessionService.GetCoursesForDropdownAsync();
+                vm.Instructors = await _sessionService.GetInstructorsForDropdownAsync();
                 return View(vm);
             }
         }
@@ -93,8 +93,8 @@ namespace CAMS.Presentation.Controllers
                 InstructorId = session.InstructorId,
                 Status = session.Status,
                 Mode = session.Mode,
-                Courses = await GetCoursesForDropdownAsync(),
-                Instructors = await GetInstructorsForDropdownAsync()
+                Courses = await _sessionService.GetCoursesForDropdownAsync(),
+                Instructors = await _sessionService.GetInstructorsForDropdownAsync()
             };
 
             return View(vm);
@@ -103,8 +103,8 @@ namespace CAMS.Presentation.Controllers
         {
             if (!ModelState.IsValid)
             {
-                vm.Courses = await GetCoursesForDropdownAsync();
-                vm.Instructors = await GetInstructorsForDropdownAsync();
+                vm.Courses = await _sessionService.GetCoursesForDropdownAsync();
+                vm.Instructors = await _sessionService.GetInstructorsForDropdownAsync();
                 return View(vm);
             }
 
@@ -117,8 +117,8 @@ namespace CAMS.Presentation.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError("", ex.Message);
-                vm.Courses = await GetCoursesForDropdownAsync();
-                vm.Instructors = await GetInstructorsForDropdownAsync();
+                vm.Courses = await _sessionService.GetCoursesForDropdownAsync();
+                vm.Instructors = await _sessionService.GetInstructorsForDropdownAsync();
                 return View(vm);
             }
         }

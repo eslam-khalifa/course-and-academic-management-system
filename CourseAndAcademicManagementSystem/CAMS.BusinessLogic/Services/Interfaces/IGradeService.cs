@@ -1,5 +1,6 @@
 ﻿using CAMS.BusinessLogic.ViewModels.GradeViewModels;
 using CAMS.BusinessLogic.ViewModels.Shared;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,5 +19,7 @@ namespace CAMS.BusinessLogic.Services.Interfaces
         public Task<PagedResultViewModel<GradeViewModel>> GetGradesAsync(string TraineeName,
             int? sessionId = null, int? traineeId = null,
             int pageNumber = 1, int pageSize = 10);
+        Task<IEnumerable<SelectListItem>>? GetSessionDropDownAsync();
+        Task<IEnumerable<SelectListItem>>? GetTraineeDropDownAsync();
     }
 }

@@ -1,9 +1,11 @@
 ﻿using CAMS.BusinessLogic.Services.Interfaces;
+using CAMS.BusinessLogic.ViewModels;
 using CAMS.BusinessLogic.ViewModels.GradeViewModels;
 using CAMS.BusinessLogic.ViewModels.Shared;
 using CAMS.DataAccess.Entities;
 using DataAccessLayer.Entities;
 using DataAccessLayer.IUnitOfWorkAndImplementation;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,10 +16,12 @@ namespace CAMS.BusinessLogic.Services.Classes
     public class GradeService : IGradeService
     {
         private readonly IUnitOFWork _unitOfWork;
+        private readonly ISessionService _sessionService;
 
-        public GradeService(IUnitOFWork unitOfWork)
+        public GradeService(IUnitOFWork unitOfWork, ISessionService sessionService)
         {
             _unitOfWork = unitOfWork;
+            _sessionService = sessionService;
         }
 
         public async Task<GradeViewModel> CreatedGradeAsync(CreatedGradeViewModel gradeVm)
@@ -206,6 +210,45 @@ namespace CAMS.BusinessLogic.Services.Classes
                 PageSize = pageSize,
                
             };
+        }
+
+        public async Task<IEnumerable<SelectListItem>>? GetSessionDropDownAsync()
+        {
+            var sessions = await _sessionService.GetSessionsAsync(
+                search: null,
+                pageNumber: 1,
+                pageSize: int.MaxValue // fetch all sessions
+            );
+
+            return sessions.Items.Select(s => new SelectListItem
+            {
+                Value = s.SessionId.ToString(),
+                Text = s.Title
+            });
+        }
+
+        public async Task<IEnumerable<SelectListItem>> GetTraineeDropDownAsync()
+        {
+            var userRepo = _unitOfWork.Repository<User, int>();
+
+            // Create a specification for trainees
+            var queryUser = new QueryUser
+            {
+                Role = "Trainee",       // Filter only trainees
+                PageSize = int.MaxValue, // Fetch all
+                PageIndex = 0,
+                Search = "asc"           // Order by name ascending
+            };
+
+            var spec = new UserSpecification(queryUser);
+
+            var trainees = await userRepo.GetAllAsync(spec);
+
+            return trainees.Select(t => new SelectListItem
+            {
+                Value = t.Id.ToString(),
+                Text = t.Name
+            });
         }
     }
 }

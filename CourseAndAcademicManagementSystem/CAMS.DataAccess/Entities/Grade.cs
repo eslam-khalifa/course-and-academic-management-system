@@ -15,7 +15,7 @@ namespace DataAccessLayer.Entities
     {
         public int SessionId { get; set; }
         public Session Session { get; set; } = null!;
-        public int? TraineeId { get; set; }
+        public int TraineeId { get; set; }
         public User? Trainee { get; set; } 
         public int Value { get; set; }
         public decimal? Weight { get; set; }

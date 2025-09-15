@@ -32,7 +32,7 @@ namespace DataAccessLayer.Entities
 
         public int? Capacity { get; set; }
 
-        public int? InstructorId { get; set; }
+        public int InstructorId { get; set; }
 
         public User? Instructor { get; set; } 
 

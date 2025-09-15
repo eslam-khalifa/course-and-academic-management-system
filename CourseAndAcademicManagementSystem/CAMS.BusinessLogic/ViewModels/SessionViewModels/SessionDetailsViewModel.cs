@@ -9,8 +9,8 @@ namespace CAMS.BusinessLogic.ViewModels.SessionViewModels
 {
     public class SessionDetailsViewModel
     {
-        public int? SessionId { get; set; }
-        public int? CourseId { get; set; }
+        public int SessionId { get; set; }
+        public int CourseId { get; set; }
         public Course? Course { get; set; } = null!;
 
         public string? Title { get; set; }
@@ -28,7 +28,7 @@ namespace CAMS.BusinessLogic.ViewModels.SessionViewModels
 
         public int? Capacity { get; set; }
 
-        public int? InstructorId { get; set; }
+        public int InstructorId { get; set; }
 
 
         public string Status { get; set; } = null!;

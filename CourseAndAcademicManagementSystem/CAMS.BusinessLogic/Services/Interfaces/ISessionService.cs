@@ -1,5 +1,6 @@
 ﻿using CAMS.BusinessLogic.ViewModels.SessionViewModels;
 using CAMS.BusinessLogic.ViewModels.Shared;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Threading.Tasks;
 
 namespace CAMS.BusinessLogic.Services.Interfaces
@@ -15,5 +16,7 @@ namespace CAMS.BusinessLogic.Services.Interfaces
             string? search = null,
             int pageNumber = 1,
             int pageSize = 10);
+        Task<IEnumerable<SelectListItem>> GetCoursesForDropdownAsync();
+        Task<IEnumerable<SelectListItem>> GetInstructorsForDropdownAsync();
     }
 }

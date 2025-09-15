@@ -12,7 +12,7 @@ namespace CAMS.BusinessLogic.ViewModels.GradeViewModels
         public int GradeId { get; set; }
         public int SessionId { get; set; }
         public Session Session { get; set; } = null!;
-        public int? TraineeId { get; set; }
+        public int TraineeId { get; set; }
         public UserVM? Trainee { get; set; } = null!;
         public int Value { get; set; }
         public decimal? Weight { get; set; }
