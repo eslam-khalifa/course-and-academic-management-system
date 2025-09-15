@@ -1,4 +1,6 @@
-﻿using System;
+﻿using CAMS.BusinessLogic.ViewModels.CourseViewModels;
+using CAMS.BusinessLogic.ViewModels.Shared;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,10 +10,10 @@ namespace CAMS.BusinessLogic.Services.Interfaces
 {
     public interface ICourseService
     {
-        Task<Course> CreateCourseAsync(Course course);
-        Task<Course> UpdateCourseAsync(Course course);
-        Task<bool> DeleteCourseAsync(int courseId);
-        Task<Course?> GetCourseByIdAsync(int courseId);
-        Task<IEnumerable<Course>> GetCoursesAsync(string? search = null, int pageNumber = 1, int pageSize = 10);
+        Task<CourseViewModel> CreateCourseAsync(CreatedCourseViewModel course);
+        Task<CourseViewModel> UpdateCourseAsync(UpdatedCourseViewModel course);
+        Task<OperationResultViewModel> DeleteCourseAsync(int courseId);
+        Task<CourseViewModel?> GetCourseByIdAsync(int courseId);
+        public Task<PagedResultViewModel<CourseViewModel>> GetCoursesAsync(string? search = null, int pageNumber = 1, int pageSize = 10);
     }
 }

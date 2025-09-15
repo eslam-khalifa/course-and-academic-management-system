@@ -27,9 +27,6 @@ namespace CAMS.BusinessLogic.ViewModels.CourseViewModels
         [StringLength(50)]
         public string Category { get; set; } = null!;
 
-        [StringLength(250)]
-        public string? ShortDescription { get; set; }
-
         public string? Description { get; set; }
 
         [Range(0, 10)]

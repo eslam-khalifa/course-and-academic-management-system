@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -63,6 +64,11 @@ namespace DataAccessLayer.RepositoryImplementation
         public Task<int> CountAsync(ISpecification<TEntity, TKey> specification)
         {
             return SpecificationEvulator.CreateQuery(_dbContext.Set<TEntity>(), specification).CountAsync();    
+        }
+
+        public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            return await _dbContext.Set<TEntity>().AnyAsync(predicate);
         }
     }
 }

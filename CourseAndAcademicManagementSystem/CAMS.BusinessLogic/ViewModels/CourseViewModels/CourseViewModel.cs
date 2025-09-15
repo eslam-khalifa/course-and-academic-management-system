@@ -12,6 +12,8 @@ namespace CAMS.BusinessLogic.ViewModels.CourseViewModels
 {
     public class CourseViewModel
     {
+        public int CourseId { get; set; }
+
         [Required]
         [StringLength(50, MinimumLength = 3)]
         [NoNumber]
@@ -29,5 +31,7 @@ namespace CAMS.BusinessLogic.ViewModels.CourseViewModels
         public int? InstructorId { get; set; }
 
         public string? InstructorName { get; set; }
+
+        public bool IsActive { get; set; } = true;
     }
 }

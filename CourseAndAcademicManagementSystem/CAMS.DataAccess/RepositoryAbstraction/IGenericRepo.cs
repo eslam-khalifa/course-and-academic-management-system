@@ -3,6 +3,7 @@ using DataAccessLayer.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,5 +26,7 @@ namespace DataAccessLayer.RepositoryAbstraction
         public Task UpdateAsync( TEntity entity);
 
         public Task<int> CountAsync(ISpecification<TEntity,Tkey> specification);
+
+        public Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> predicate);
     }
 }

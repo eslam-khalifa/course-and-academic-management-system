@@ -1,94 +1,197 @@
 ﻿using CAMS.BusinessLogic.Services.Interfaces;
+using CAMS.BusinessLogic.ViewModels.CourseViewModels;
+using CAMS.BusinessLogic.ViewModels.Shared;
+using DataAccessLayer.Entities;
+using DataAccessLayer.IUnitOfWorkAndImplementation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CAMS.BusinessLogic.Services.Classes
 {
     public class CourseService : ICourseService
     {
-        private readonly ICourseRepository _courseRepository;
-        private readonly ISessionRepository _sessionRepository;
-        private readonly IUserRepository _userRepository;
+        private readonly IUnitOFWork _unitOfWork;
 
-        public CourseService(ICourseRepository courseRepository, ISessionRepository sessionRepository, IUserRepository userRepository)
+        public CourseService(IUnitOFWork unitOfWork)
         {
-            _courseRepository = courseRepository;
-            _sessionRepository = sessionRepository;
-            _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
         }
 
-        public async Task<Course> CreateCourseAsync(Course course)
+        public async Task<CourseViewModel> CreateCourseAsync(CreatedCourseViewModel courseVm)
         {
+            var courseRepo = _unitOfWork.Repository<Course, int>();
+            var userRepo = _unitOfWork.Repository<UserApp, int>();
+
             // Business rule: Name must not contain numbers
-            if (course.Name.Any(char.IsDigit))
+            if (courseVm.Name.Any(char.IsDigit))
                 throw new Exception("Course name cannot contain numbers");
 
             // Business rule: Name must be unique
-            if (await _courseRepository.ExistsByNameAsync(course.Name))
+            var existsByName = await courseRepo.ExistsAsync(c => c.Name == courseVm.Name);
+            if (existsByName)
                 throw new Exception("Course name already exists");
 
-            // Optional: validate Instructor exists
-            if (course.InstructorId.HasValue)
+            // Validate Instructor exists
+            if (courseVm.InstructorId.HasValue)
             {
-                var exists = await _userRepository.ExistsByIdAsync(course.InstructorId.Value);
-                if (!exists)
+                var instructorExists = await userRepo.ExistsAsync(u => u.Id == courseVm.InstructorId.Value);
+                if (!instructorExists)
                     throw new Exception("Instructor does not exist");
             }
 
-            return await _courseRepository.AddAsync(course);
+            // Map VM -> Entity
+            var course = new Course
+            {
+                Name = courseVm.Name,
+                Code = courseVm.Code,
+                Category = courseVm.Category,
+                Description = courseVm.Description,
+                Credits = courseVm.Credits,
+                DurationHours = courseVm.DurationHours,
+                MaxTrainees = courseVm.MaxTrainees,
+                IsActive = courseVm.IsActive,
+                InstructorId = courseVm.InstructorId,
+                ThumbnailUrl = courseVm.ThumbnailUrl
+            };
+
+            await courseRepo.AddAsync(course);
+            await _unitOfWork.SaveChangesAsync();
+
+            // Map Entity -> VM
+            return new CourseViewModel
+            {
+                CourseId = course.Id,
+                Name = course.Name,
+                Code = course.Code,
+                Category = course.Category,
+                IsActive = course.IsActive,
+                InstructorId = course.InstructorId,
+                InstructorName = course.Instructor?.DisplayName
+            };
         }
 
-        public async Task<Course> UpdateCourseAsync(Course course)
+        public async Task<CourseViewModel> UpdateCourseAsync(UpdatedCourseViewModel courseVm)
         {
-            var existing = await _courseRepository.GetByIdAsync(course.CourseId);
+            var courseRepo = _unitOfWork.Repository<Course, int>();
+            var userRepo = _unitOfWork.Repository<UserApp, int>();
+            var sessionRepo = _unitOfWork.Repository<Session, int>();
+
+            var existing = await courseRepo.GetByIdAsync(courseVm.CourseId);
             if (existing == null) throw new Exception("Course not found");
 
             // Business rule: Name must not contain numbers
-            if (course.Name.Any(char.IsDigit))
+            if (courseVm.Name.Any(char.IsDigit))
                 throw new Exception("Course name cannot contain numbers");
 
             // Business rule: Name must be unique
-            if (await _courseRepository.ExistsByNameAsync(course.Name) &&
-                !string.Equals(existing.Name, course.Name, StringComparison.OrdinalIgnoreCase))
+            var existsByName = await courseRepo.ExistsAsync(c => c.Name == courseVm.Name && c.Id != courseVm.CourseId);
+            if (existsByName)
                 throw new Exception("Course name already exists");
 
             // Business rule: Cannot deactivate course with scheduled sessions
-            if (!course.IsActive)
+            if (!courseVm.IsActive)
             {
-                var scheduledSessions = await _sessionRepository.HasScheduledSessionsAsync(course.CourseId);
-                if (scheduledSessions)
+                var hasSessions = await sessionRepo.ExistsAsync(s => s.CourseId == courseVm.CourseId && !s.IsCompleted);
+                if (hasSessions)
                     throw new Exception("Cannot inactivate course with scheduled sessions");
             }
 
             // Validate Instructor assignment
-            if (course.InstructorId.HasValue)
+            if (courseVm.InstructorId.HasValue)
             {
-                var exists = await _userRepository.ExistsByIdAsync(course.InstructorId.Value);
-                if (!exists)
+                var instructorExists = await userRepo.ExistsAsync(u => u.Id == courseVm.InstructorId.Value);
+                if (!instructorExists)
                     throw new Exception("Instructor does not exist");
             }
 
-            return await _courseRepository.UpdateAsync(course);
+            // Map VM -> Entity update
+            existing.Name = courseVm.Name;
+            existing.Code = courseVm.Code;
+            existing.Category = courseVm.Category;
+            existing.Description = courseVm.Description;
+            existing.Credits = courseVm.Credits;
+            existing.DurationHours = courseVm.DurationHours;
+            existing.MaxTrainees = courseVm.MaxTrainees;
+            existing.IsActive = courseVm.IsActive;
+            existing.InstructorId = courseVm.InstructorId;
+            existing.ThumbnailUrl = courseVm.ThumbnailUrl;
+
+            await courseRepo.UpdateAsync(existing);
+            await _unitOfWork.SaveChangesAsync();
+
+            // Map back to VM
+            return new CourseViewModel
+            {
+                CourseId = existing.Id,
+                Name = existing.Name,
+                Code = existing.Code,
+                Category = existing.Category,
+                IsActive = existing.IsActive,
+                InstructorId = existing.InstructorId,
+                InstructorName = existing.Instructor?.DisplayName
+            };
         }
 
-        public async Task<bool> DeleteCourseAsync(int courseId)
+        public async Task<OperationResultViewModel> DeleteCourseAsync(int courseId)
         {
-            var course = await _courseRepository.GetByIdAsync(courseId);
-            if (course == null) return false;
+            var courseRepo = _unitOfWork.Repository<Course, int>();
+            var course = await courseRepo.GetByIdAsync(courseId);
+            if (course == null)
+                return OperationResultViewModel.Fail("Course not found");
 
             // Soft delete
             course.IsDeleted = true;
-            await _courseRepository.UpdateAsync(course);
-            return true;
+            await courseRepo.UpdateAsync(course);
+            await _unitOfWork.SaveChangesAsync();
+
+            return OperationResultViewModel.Ok("Course deleted successfully");
         }
 
-        public Task<Course?> GetCourseByIdAsync(int courseId)
-            => _courseRepository.GetByIdAsync(courseId);
+        public async Task<CourseViewModel?> GetCourseByIdAsync(int courseId)
+        {
+            var courseRepo = _unitOfWork.Repository<Course, int>();
+            var course = await courseRepo.GetByIdAsync(courseId);
+            if (course == null) return null;
 
-        public Task<IEnumerable<Course>> GetCoursesAsync(string? search = null, int pageNumber = 1, int pageSize = 10)
-            => _courseRepository.GetPagedAsync(search, pageNumber, pageSize);
+            return new CourseViewModel
+            {
+                CourseId = course.Id,
+                Name = course.Name,
+                Code = course.Code,
+                Category = course.Category,
+                IsActive = course.IsActive,
+                InstructorId = course.InstructorId,
+                InstructorName = course.Instructor?.DisplayName
+            };
+        }
+
+        public async Task<PagedResultViewModel<CourseViewModel>> GetCoursesAsync(string? search = null, int pageNumber = 1, int pageSize = 10)
+        {
+            var courseRepo = _unitOfWork.Repository<Course, int>();
+            var (items, totalCount) = await courseRepo.GetPagedAsync(
+                filter: c => string.IsNullOrEmpty(search) || c.Name.Contains(search),
+                pageNumber: pageNumber,
+                pageSize: pageSize
+            );
+
+            return new PagedResultViewModel<CourseViewModel>
+            {
+                Items = items.Select(c => new CourseViewModel
+                {
+                    CourseId = c.CourseId,
+                    Name = c.Name,
+                    Code = c.Code,
+                    Category = c.Category,
+                    IsActive = c.IsActive,
+                    InstructorId = c.InstructorId,
+                    InstructorName = c.Instructor?.FullName
+                }),
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = totalCount
+            };
+        }
     }
 }
