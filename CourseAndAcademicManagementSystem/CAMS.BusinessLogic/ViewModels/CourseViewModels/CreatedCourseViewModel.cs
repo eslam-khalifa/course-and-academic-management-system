@@ -1,4 +1,7 @@
 ﻿using CAMS.BusinessLogic.Services.Validators;
+using DataAccessLayer.Entities;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -6,12 +9,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CAMS.BusinessLogic.ViewModels
+namespace CAMS.BusinessLogic.ViewModels.CourseViewModels
 {
-    public class CourseViewModel
+    public class CreatedCourseViewModel
     {
-        public int CourseId { get; set; }
-
         [Required]
         [StringLength(50, MinimumLength = 3)]
         [NoNumber]
@@ -42,6 +43,11 @@ namespace CAMS.BusinessLogic.ViewModels
 
         public bool IsActive { get; set; } = true;
 
+        [Required(ErrorMessage = "Instructor is required")]
         public int? InstructorId { get; set; }
+
+        public IEnumerable<SelectListItem>? Instructors { get; set; }
+
+        public string? ThumbnailUrl { get; set; }
     }
 }

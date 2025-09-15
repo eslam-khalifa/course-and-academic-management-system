@@ -6,4 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CAMS.BusinessLogic\CAMS.BusinessLogic.csproj" />
+  </ItemGroup>
+
 </Project>
