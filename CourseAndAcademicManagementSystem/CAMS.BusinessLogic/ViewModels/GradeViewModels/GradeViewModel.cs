@@ -27,7 +27,7 @@ namespace CAMS.BusinessLogic.ViewModels.GradeViewModels
         [Range(0, 100)]
         public decimal? Weight { get; set; }
 
-        public bool IsFinal { get; set; } = false;
+        public bool? IsFinal { get; set; } = false;
 
         public DateTime? GradedAt { get; set; }
     }

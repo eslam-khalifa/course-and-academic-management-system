@@ -1,4 +1,6 @@
-﻿using System;
+﻿using CAMS.BusinessLogic.ViewModels.GradeViewModels;
+using CAMS.BusinessLogic.ViewModels.Shared;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -9,11 +11,12 @@ namespace CAMS.BusinessLogic.Services.Interfaces
 {
     public interface IGradeService
     {
-        Task<Grade> AddGradeAsync(Grade grade);
-        Task<Grade> UpdateGradeAsync(Grade grade);
-        Task<bool> DeleteGradeAsync(int gradeId); // soft delete
-        Task<Grade?> GetGradeByIdAsync(int gradeId);
-        Task<IEnumerable<Grade>> GetGradesAsync(int? sessionId = null, int? traineeId = null,
+        Task<GradeViewModel> CreatedGradeAsync(CreatedGradeViewModel gradeVm);
+        Task<GradeViewModel> UpdateGradeAsync(UpdatedGradeViewModel grade);
+        Task<OperationResultViewModel> DeleteGradeAsync(int gradeId);
+        Task<GradeDetailsViewModel?> GetGradeByIdAsync(int gradeId);
+        public Task<PagedResultViewModel<GradeViewModel>> GetGradesAsync(
+            int? sessionId = null, int? traineeId = null,
             int pageNumber = 1, int pageSize = 10);
     }
 }

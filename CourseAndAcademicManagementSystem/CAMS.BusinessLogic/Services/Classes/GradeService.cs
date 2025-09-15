@@ -1,106 +1,217 @@
 ﻿using CAMS.BusinessLogic.Services.Interfaces;
+using CAMS.BusinessLogic.ViewModels.GradeViewModels;
+using CAMS.BusinessLogic.ViewModels.Shared;
+using DataAccessLayer.Entities;
+using DataAccessLayer.IUnitOfWorkAndImplementation;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CAMS.BusinessLogic.Services.Classes
 {
     public class GradeService : IGradeService
     {
-        private readonly IGradeRepository _gradeRepository;
-        private readonly ISessionRepository _sessionRepository;
-        private readonly IUserRepository _userRepository;
+        private readonly IUnitOFWork _unitOfWork;
 
-        public GradeService(IGradeRepository gradeRepository, ISessionRepository sessionRepository, IUserRepository userRepository)
+        public GradeService(IUnitOFWork unitOfWork)
         {
-            _gradeRepository = gradeRepository;
-            _sessionRepository = sessionRepository;
-            _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
         }
 
-        public async Task<Grade> AddGradeAsync(Grade grade)
+        public async Task<GradeViewModel> CreatedGradeAsync(CreatedGradeViewModel gradeVm)
         {
-            // Business Rule: Validate Session exists
-            var session = await _sessionRepository.GetByIdAsync(grade.SessionId);
+            var gradeRepo = _unitOfWork.Repository<Grade, int>();
+            var sessionRepo = _unitOfWork.Repository<Session, int>();
+            var userRepo = _unitOfWork.Repository<UserApp, int>();
+
+            // Validate session exists
+            var session = await sessionRepo.GetByIdAsync(gradeVm.SessionId);
             if (session == null) throw new Exception("Session does not exist");
 
-            // Business Rule: Cannot add grades to cancelled sessions
+            // Cannot add grades to cancelled sessions
             if (session.Status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase))
                 throw new Exception("Cannot add grade to cancelled session");
 
-            // Business Rule: Validate Trainee exists and role
-            var trainee = await _userRepository.GetByIdAsync(grade.TraineeId);
-            if (trainee == null) throw new Exception("Trainee does not exist");
+            // Validate trainee exists
+            var trainee = await userRepo.GetByIdAsync(gradeVm.TraineeId);
+            if (trainee is null) throw new Exception("Trainee does not exist");
             if (!trainee.Role.Equals("Trainee", StringComparison.OrdinalIgnoreCase))
                 throw new Exception("User is not a trainee");
 
-            // Business Rule: Validate value
-            if (grade.Value < 0 || grade.Value > 100)
+            // Validate value
+            if (gradeVm.Value < 0 || gradeVm.Value > 100)
                 throw new Exception("Grade value must be between 0 and 100");
 
-            // Business Rule: Validate unique IsFinal per session + trainee
-            if (grade.IsFinal)
+            // Validate unique final grade
+            if (gradeVm.IsFinal == true)
             {
-                var finalExists = (await _gradeRepository.GetGradesBySessionAndTraineeAsync(grade.SessionId, grade.TraineeId))
-                                  .Any(g => g.IsFinal);
-                if (finalExists) throw new Exception("Final grade already exists for this trainee in this session");
+                var existingFinal = await gradeRepo.ExistsAsync(
+                    g => g.SessionId == gradeVm.SessionId && g.TraineeId == gradeVm.TraineeId && g.IsFinal == gradeVm.IsFinal
+                );
+                if (existingFinal)
+                    throw new Exception("Final grade already exists for this trainee in this session");
             }
 
-            return await _gradeRepository.AddAsync(grade);
+            // Map VM -> Entity
+            var grade = new Grade
+            {
+                SessionId = gradeVm.SessionId,
+                TraineeId = gradeVm.TraineeId,
+                Value = gradeVm.Value,
+                Weight = gradeVm.Weight,
+                AttemptNumber = gradeVm.AttemptNumber,
+                IsFinal = gradeVm.IsFinal,
+                Comments = gradeVm.Comments,
+                GradedAt = DateTime.UtcNow
+            };
+
+            await gradeRepo.AddAsync(grade);
+            await _unitOfWork.SaveChangesAsync();
+
+            // Map Entity -> VM
+            return new GradeViewModel
+            {
+                GradeId = grade.Id,
+                SessionId = grade.SessionId,
+                SessionName = session.Title,
+                TraineeId = grade.TraineeId,
+                TraineeName = trainee.DisplayName,
+                Value = grade.Value,
+                Weight = grade.Weight,
+                IsFinal = grade.IsFinal,
+                GradedAt = grade.GradedAt
+            };
         }
 
-        public async Task<Grade> UpdateGradeAsync(Grade grade)
+        public async Task<GradeViewModel> UpdateGradeAsync(UpdatedGradeViewModel gradeVm)
         {
-            var existing = await _gradeRepository.GetByIdAsync(grade.GradeId);
+            var gradeRepo = _unitOfWork.Repository<Grade, int>();
+            var sessionRepo = _unitOfWork.Repository<Session, int>();
+            var userRepo = _unitOfWork.Repository<UserApp, int>();
+
+            var existing = await gradeRepo.GetByIdAsync(gradeVm.GradeId);
             if (existing == null) throw new Exception("Grade not found");
 
-            // Business Rule: Validate Session exists
-            var session = await _sessionRepository.GetByIdAsync(grade.SessionId);
+            var session = await sessionRepo.GetByIdAsync(gradeVm.SessionId);
             if (session == null) throw new Exception("Session does not exist");
-
-            // Business Rule: Cannot add grades to cancelled sessions
             if (session.Status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase))
-                throw new Exception("Cannot add grade to cancelled session");
+                throw new Exception("Cannot update grade for cancelled session");
 
-            // Business Rule: Validate Trainee exists and role
-            var trainee = await _userRepository.GetByIdAsync(grade.TraineeId);
-            if (trainee == null) throw new Exception("Trainee does not exist");
+            var trainee = await userRepo.GetByIdAsync(gradeVm.TraineeId);
+            if (trainee is null) throw new Exception("Trainee does not exist");
             if (!trainee.Role.Equals("Trainee", StringComparison.OrdinalIgnoreCase))
                 throw new Exception("User is not a trainee");
 
-            // Business Rule: Validate value
-            if (grade.Value < 0 || grade.Value > 100)
+            if (gradeVm.Value < 0 || gradeVm.Value > 100)
                 throw new Exception("Grade value must be between 0 and 100");
 
-            // Business Rule: Validate unique IsFinal per session + trainee
-            if (grade.IsFinal)
+            if (gradeVm.IsFinal == true)
             {
-                var finalExists = (await _gradeRepository.GetGradesBySessionAndTraineeAsync(grade.SessionId, grade.TraineeId))
-                                  .Any(g => g.IsFinal);
-                if (finalExists) throw new Exception("Final grade already exists for this trainee in this session");
+                var finalExists = await gradeRepo.ExistsAsync(
+                    g => g.Id == gradeVm.GradeId &&
+                         g.TraineeId == gradeVm.TraineeId &&
+                         g.IsFinal == gradeVm.IsFinal &&
+                         g.Id != gradeVm.GradeId
+                );
+                if (finalExists)
+                    throw new Exception("Final grade already exists for this trainee in this session");
             }
 
-            return await _sessionRepoistory.UpdateAsync(session);
+            // Map VM -> Entity
+            existing.Value = gradeVm.Value;
+            existing.Weight = gradeVm.Weight;
+            existing.AttemptNumber = gradeVm.AttemptNumber;
+            existing.IsFinal = gradeVm.IsFinal;
+            existing.Comments = gradeVm.Comments;
+            existing.UpdatedAt = DateTime.UtcNow;
+
+            await gradeRepo.UpdateAsync(existing);
+            await _unitOfWork.SaveChangesAsync();
+
+            return new GradeViewModel
+            {
+                GradeId = existing.Id,
+                SessionId = existing.SessionId,
+                SessionName = session.Title,
+                TraineeId = existing.TraineeId,
+                TraineeName = trainee.DisplayName,
+                Value = existing.Value,
+                Weight = existing.Weight,
+                IsFinal = existing.IsFinal,
+                GradedAt = existing.GradedAt
+            };
         }
 
-        public async Task<bool> DeleteGradeAsync(int gradeId)
+        public async Task<OperationResultViewModel> DeleteGradeAsync(int gradeId)
         {
-            var grade = await _gradeRepository.GetByIdAsync(gradeId);
-            if (grade == null) return false;
+            var gradeRepo = _unitOfWork.Repository<Grade, int>();
+            var grade = await gradeRepo.GetByIdAsync(gradeId);
+            if (grade == null)
+                return OperationResultViewModel.Fail("Grade not found");
 
             grade.IsDeleted = true;
-            await _gradeRepository.UpdateAsync(grade);
-            return true;
+            await gradeRepo.UpdateAsync(grade);
+            await _unitOfWork.SaveChangesAsync();
+
+            return OperationResultViewModel.Ok("Grade deleted successfully");
         }
 
-        public Task<Grade?> GetGradeByIdAsync(int gradeId)
-            => _gradeRepository.GetByIdAsync(gradeId);
+        public async Task<GradeDetailsViewModel?> GetGradeByIdAsync(int gradeId)
+        {
+            var gradeRepo = _unitOfWork.Repository<Grade, int>();
+            var grade = await gradeRepo.GetByIdAsync(gradeId);
+            if (grade == null) return null;
 
-        public Task<IEnumerable<Grade>> GetGradesAsync(int? sessionId = null, int? traineeId = null,
+            return new GradeDetailsViewModel
+            {
+                GradeId = grade.Id,
+                SessionId = grade.SessionId,
+                TraineeId = grade.TraineeId,
+                Value = grade.Value,
+                Weight = grade.Weight,
+                AttemptNumber = grade.AttemptNumber,
+                IsFinal = grade.IsFinal,
+                GradedAt = grade.GradedAt,
+                Comments = grade.Comments,
+                CreatedAt = grade.CreatedAt,
+                CreatedBy = grade.CreatedBy,
+                UpdatedAt = grade.UpdatedAt,
+                UpdatedBy = grade.UpdatedBy
+            };
+        }
+
+        public async Task<PagedResultViewModel<GradeViewModel>> GetGradesAsync(
+            int? sessionId = null, int? traineeId = null,
             int pageNumber = 1, int pageSize = 10)
-            => _gradeRepository.GetPagedAsync(sessionId, traineeId, pageNumber, pageSize);
+        {
+            var gradeRepo = _unitOfWork.Repository<Grade, int>();
+            var (items, totalCount) = await gradeRepo.GetPagedAsync(
+                filter: g =>
+                    (!sessionId.HasValue || g.SessionId == sessionId) &&
+                    (!traineeId.HasValue || g.TraineeId == traineeId),
+                pageNumber: pageNumber,
+                pageSize: pageSize
+            );
+
+            return new PagedResultViewModel<GradeViewModel>
+            {
+                Items = items.Select(g => new GradeViewModel
+                {
+                    GradeId = g.Id,
+                    SessionId = g.SessionId,
+                    SessionName = g.Session?.Title ?? string.Empty,
+                    TraineeId = g.TraineeId,
+                    TraineeName = g.Trainee?.DisplayName ?? string.Empty,
+                    Value = g.Value,
+                    Weight = g.Weight,
+                    IsFinal = g.IsFinal,
+                    GradedAt = g.GradedAt
+                }),
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = totalCount
+            };
+        }
     }
 }

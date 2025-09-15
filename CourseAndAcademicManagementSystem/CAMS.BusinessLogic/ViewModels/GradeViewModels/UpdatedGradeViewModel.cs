@@ -10,6 +10,8 @@ namespace CAMS.BusinessLogic.ViewModels.GradeViewModels
 {
     public class UpdatedGradeViewModel
     {
+        public int GradeId { get; set; }
+
         [Required]
         public int SessionId { get; set; }
         public IEnumerable<SelectListItem>? Sessions { get; set; }
