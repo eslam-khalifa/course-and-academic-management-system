@@ -43,5 +43,7 @@ namespace CAMS.BusinessLogic.ViewModels.SessionViewModels
         public DateTime? UpdatedAt { get; set; }
 
         public int? UpdatedBy { get; set; }
+
+        public bool IsDeleted { get; set; }
     }
 }

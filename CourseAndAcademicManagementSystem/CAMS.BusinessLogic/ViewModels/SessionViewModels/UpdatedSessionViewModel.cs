@@ -8,6 +8,7 @@ namespace CAMS.BusinessLogic.ViewModels.SessionViewModels
 {
     public class UpdatedSessionViewModel
     {
+        public int SessionId { get; set; }
         public int CourseId { get; set; }
 
         public string Title { get; set; } = string.Empty;

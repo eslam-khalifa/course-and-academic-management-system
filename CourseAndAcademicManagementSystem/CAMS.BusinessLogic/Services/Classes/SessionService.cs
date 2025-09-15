@@ -1,97 +1,203 @@
 ﻿using CAMS.BusinessLogic.Services.Interfaces;
+using CAMS.BusinessLogic.ViewModels.SessionViewModels;
+using CAMS.BusinessLogic.ViewModels.Shared;
+using DataAccessLayer.Entities;
+using DataAccessLayer.IUnitOfWorkAndImplementation;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using static System.Collections.Specialized.BitVector32;
 
 namespace CAMS.BusinessLogic.Services.Classes
 {
     public class SessionService : ISessionService
     {
-        private readonly ISessionRepository _sessionRepoistory;
-        private readonly ICourseRepository _courseRepository;
-        private readonly IUserRepository _userRepository;
+        private readonly IUnitOFWork _unitOfWork;
 
-        public SessionService(ISessionRepository sessionRepository, ICourseRepository courseRepository, IUserRepository userRepository)
+        public SessionService(IUnitOFWork unitOfWork)
         {
-            _sessionRepoistory = sessionRepository;
-            _courseRepository = courseRepository;
-            _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
         }
 
-        public async Task<Session> CreateSessionAsync(Session session)
+        public async Task<SessionViewModel> CreateSessionAsync(CreatedSessionViewModel vm)
         {
+            var sessionRepo = _unitOfWork.Repository<Session, int>();
+            var courseRepo = _unitOfWork.Repository<Course, int>();
+            var userRepo = _unitOfWork.Repository<UserApp, int>();
+
             // Business Rule: Validate Course exists
-            var course = await _courseRepository.GetByIdAsync(session.CourseId);
+            var course = await courseRepo.GetByIdAsync(vm.CourseId);
             if (course == null) throw new Exception("Course does not exist");
 
-            // Business Rule: Validate Instructor exists if provided
-            if (session.InstructorId.HasValue)
-            {
-                var instructorExists = await _userRepository.ExistsByIdAsync(session.InstructorId.Value);
-                if (!instructorExists) throw new Exception("Instructor does not exist");
-            }
+            // Business Rule: Validate Instructor exists
+            var instructorExists = await userRepo.ExistsAsync(u => u.Id == vm.InstructorId);
+            if (!instructorExists) throw new Exception("Instructor does not exist");
 
             // Business Rule: Validate dates
-            if (session.StartDate < DateTime.Today)
-                throw new Exception("Start date cannot be in the past");
-            if (session.EndDate <= session.StartDate)
+            if (vm.EndDate <= vm.StartDate)
                 throw new Exception("End date must be after Start date");
 
-            // Business Rule: Validate Capacity
-            if (session.Capacity < 0)
+            if (vm.Capacity < 0)
                 throw new Exception("Capacity cannot be negative");
 
-            return await _sessionRepoistory.AddAsync(session);
+            var session = new Session
+            {
+                CourseId = vm.CourseId,
+                Title = vm.Title,
+                SessionCode = vm.SessionCode,
+                StartDate = vm.StartDate,
+                EndDate = vm.EndDate,
+                EnrollmentStartDate = vm.EnrollmentStartDate,
+                EnrollmentEndDate = vm.EnrollmentEndDate,
+                Location = vm.Location,
+                Capacity = vm.Capacity,
+                InstructorId = vm.InstructorId,
+                Status = vm.Status,
+                Mode = vm.Mode
+            };
+
+            await sessionRepo.AddAsync(session);
+            await _unitOfWork.SaveChangesAsync();
+
+            return new SessionViewModel
+            {
+                SessionId = session.Id,
+                CourseId = session.CourseId,
+                Title = session.Title,
+                SessionCode = session.SessionCode,
+                StartDate = session.StartDate,
+                EndDate = session.EndDate,
+                InstructorId = session.InstructorId,
+                InstructorName = session.Instructor?.DisplayName,
+                Status = session.Status
+            };
         }
 
-        public async Task<Session> UpdateSessionAsync(Session session)
+        public async Task<SessionViewModel> UpdateSessionAsync(UpdatedSessionViewModel vm)
         {
-            // Business Rule: check if session exists
-            var existing = await _sessionRepoistory.GetByIdAsync(session.SessionId);
+            var sessionRepo = _unitOfWork.Repository<Session, int>();
+            var courseRepo = _unitOfWork.Repository<Course, int>();
+            var userRepo = _unitOfWork.Repository<UserApp, int>();
+
+            var existing = await sessionRepo.GetByIdAsync(vm.SessionId);
             if (existing == null) throw new Exception("Session not found");
 
-            // Business Rule: Validate Course exists
-            var course = await _courseRepository.GetByIdAsync(session.CourseId);
+            var course = await courseRepo.GetByIdAsync(vm.CourseId);
             if (course == null) throw new Exception("Course does not exist");
 
-            // Business Rule: Validate Instructor exists if provided
-            if (session.InstructorId.HasValue)
-            {
-                var instructorExists = await _userRepository.ExistsByIdAsync(session.InstructorId.Value);
-                if (!instructorExists) throw new Exception("Instructor does not exist");
-            }
+            var instructorExists = await userRepo.ExistsAsync(u => u.Id == vm.InstructorId);
+            if (!instructorExists) throw new Exception("Instructor does not exist");
 
-            // Business Rule: Validate dates
-            if (session.StartDate < DateTime.Today)
-                throw new Exception("Start date cannot be in the past");
-            if (session.EndDate <= session.StartDate)
+            if (vm.EndDate <= vm.StartDate)
                 throw new Exception("End date must be after Start date");
 
-            // Business Rule: Validate Capacity
-            if (session.Capacity < 0)
+            if (vm.Capacity < 0)
                 throw new Exception("Capacity cannot be negative");
 
-            return await _sessionRepoistory.UpdateAsync(session);
+            existing.Title = vm.Title;
+            existing.SessionCode = vm.SessionCode;
+            existing.StartDate = vm.StartDate;
+            existing.EndDate = vm.EndDate;
+            existing.EnrollmentStartDate = vm.EnrollmentStartDate;
+            existing.EnrollmentEndDate = vm.EnrollmentEndDate;
+            existing.Location = vm.Location;
+            existing.Capacity = vm.Capacity;
+            existing.InstructorId = vm.InstructorId;
+            existing.Status = vm.Status;
+            existing.Mode = vm.Mode;
+
+            await sessionRepo.UpdateAsync(existing);
+            await _unitOfWork.SaveChangesAsync();
+
+            return new SessionViewModel
+            {
+                SessionId = existing.Id,
+                CourseId = existing.CourseId,
+                Title = existing.Title,
+                SessionCode = existing.SessionCode,
+                StartDate = existing.StartDate,
+                EndDate = existing.EndDate,
+                InstructorId = existing.InstructorId,
+                InstructorName = existing.Instructor?.DisplayName,
+                Status = existing.Status
+            };
         }
 
-        public async Task<bool> DeleteSessionAsync(int sessionId)
+        public async Task<OperationResultViewModel> DeleteSessionAsync(int sessionId)
         {
-            var session = await _sessionRepoistory.GetByIdAsync(sessionId);
-            if (session == null) return false;
+            var sessionRepo = _unitOfWork.Repository<Session, int>();
+            var session = await sessionRepo.GetByIdAsync(sessionId);
+            if (session == null)
+                return OperationResultViewModel.Fail("Session not found");
 
             session.IsDeleted = true;
-            await _sessionRepoistory.UpdateAsync(session);
-            return true;
+            await sessionRepo.UpdateAsync(session);
+            await _unitOfWork.SaveChangesAsync();
+
+            return OperationResultViewModel.Ok("Session deleted successfully");
         }
 
-        public Task<Session?> GetSessionByIdAsync(int sessionId)
-            => _sessionRepoistory.GetByIdAsync(sessionId);
+        public async Task<SessionDetailsViewModel?> GetSessionByIdAsync(int sessionId)
+        {
+            var sessionRepo = _unitOfWork.Repository<Session, int>();
+            var session = await sessionRepo.GetByIdAsync(sessionId);
+            if (session == null) return null;
 
-        public Task<IEnumerable<Session>> GetSessionsAsync(int? courseId = null, string? search = null,
-            int pageNumber = 1, int pageSize = 10)
-            => _sessionRepoistory.GetPagedAsync(courseId, search, pageNumber, pageSize);
+            return new SessionDetailsViewModel
+            {
+                SessionId = session.Id,
+                CourseId = session.CourseId,
+                Course = session.Course!,
+                Title = session.Title,
+                SessionCode = session.SessionCode,
+                StartDate = session.StartDate,
+                EndDate = session.EndDate,
+                EnrollmentStartDate = session.EnrollmentStartDate,
+                EnrollmentEndDate = session.EnrollmentEndDate,
+                Location = session.Location,
+                Capacity = session.Capacity,
+                InstructorId = session.InstructorId,
+                Instructor = session.Instructor!,
+                Status = session.Status,
+                Mode = session.Mode,
+                CreatedAt = session.CreatedAt,
+                CreatedBy = session.CreatedBy,
+                UpdatedAt = session.UpdatedAt,
+                UpdatedBy = session.UpdatedBy
+            };
+        }
+
+        public async Task<PagedResultViewModel<SessionViewModel>> GetSessionsAsync(
+            int? courseId = null,
+            string? search = null,
+            int pageNumber = 1,
+            int pageSize = 10)
+        {
+            var sessionRepo = _unitOfWork.Repository<Session, int>();
+            var (items, totalCount) = await sessionRepo.GetPagedAsync(
+                filter: s => (!courseId.HasValue || s.CourseId == courseId) &&
+                             (string.IsNullOrEmpty(search) || s.Title.Contains(search)),
+                pageNumber: pageNumber,
+                pageSize: pageSize
+            );
+
+            return new PagedResultViewModel<SessionViewModel>
+            {
+                Items = items.Select(s => new SessionViewModel
+                {
+                    SessionId = s.Id,
+                    CourseId = s.CourseId,
+                    Title = s.Title,
+                    SessionCode = s.SessionCode,
+                    StartDate = s.StartDate,
+                    EndDate = s.EndDate,
+                    InstructorId = s.InstructorId,
+                    InstructorName = s.Instructor?.DisplayName,
+                    Status = s.Status
+                }),
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = totalCount
+            };
+        }
     }
 }
